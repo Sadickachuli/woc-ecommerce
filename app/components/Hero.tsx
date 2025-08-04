@@ -3,8 +3,19 @@ import { ArrowRight } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div 
+      className="relative bg-gradient-to-r from-primary-600/90 to-primary-800/90 text-white"
+      style={{
+        backgroundImage: "url('/ecommerce-bg.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary-600/70 to-primary-800/70"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Sustainable Living
