@@ -24,21 +24,35 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitStatus('idle')
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // In a real app, you would send this data to your backend
-    console.log('Form submitted:', formData)
-    
-    setIsSubmitting(false)
-    setSubmitStatus('success')
-    
-    // Reset form after successful submission
-    setTimeout(() => {
-      setFormData({ name: '', email: '', subject: '', message: '' })
-      setSubmitStatus('idle')
-    }, 3000)
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        // Reset form after successful submission
+        setTimeout(() => {
+          setFormData({ name: '', email: '', subject: '', message: '' })
+          setSubmitStatus('idle')
+        }, 5000)
+      } else {
+        const errorData = await response.json()
+        console.error('Contact form submission failed:', errorData)
+        setSubmitStatus('error')
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -60,7 +74,13 @@ export default function ContactPage() {
             
             {submitStatus === 'success' && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-800">Thank you for your message! We'll get back to you soon.</p>
+                <p className="text-green-800">Thank you for your message! We've sent you a confirmation email and will get back to you soon.</p>
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">Sorry, there was an error sending your message. Please try again or contact us directly at mustaphasadick705@gmail.com.</p>
               </div>
             )}
 
@@ -164,7 +184,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">hello@wingsofchange.com</p>
+                    <p className="text-gray-600">mustaphasadick705@gmail.com</p>
                     <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                   </div>
                 </div>
