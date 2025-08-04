@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     
     // Send email to seller
     const sellerEmailResult = await resend.emails.send({
-      from: 'Wings of Change <orders@wings-of-change.com>',
+      from: 'Wings of Change <onboarding@resend.dev>',
       to: [sellerEmail],
       subject: 'New Order Received - Wings of Change',
       html: `
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email to customer
     const customerEmailResult = await resend.emails.send({
-      from: 'Wings of Change <orders@wings-of-change.com>',
+      from: 'Wings of Change <onboarding@resend.dev>',
       to: [order.customer.email],
       subject: 'Order Confirmation - Wings of Change',
       html: `
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           
           <div style="margin-top: 20px; text-align: center;">
             <p style="color: #6b7280;">
-              Questions? Contact us at support@wings-of-change.com
+              Questions? Contact us at mustaphasadick705@gmail.com
             </p>
           </div>
         </div>
