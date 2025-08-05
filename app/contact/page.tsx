@@ -195,7 +195,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+233 55 832 2038</p>
+                    <p className="text-gray-600">+233 55 609 0269</p>
                     <p className="text-sm text-gray-500">Monday - Friday, 9AM - 6PM GMT</p>
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-900">How do I track my order?</h4>
-                  <p className="text-sm text-gray-600">Please call us at +233 55 832 2038 to check the status of your order.</p>
+                  <p className="text-sm text-gray-600">Please call us at +233 55 609 0269 to check the status of your order.</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">What is your return policy?</h4>
