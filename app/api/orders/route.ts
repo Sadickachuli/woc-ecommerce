@@ -25,11 +25,14 @@ export async function POST(request: NextRequest) {
     
     const { customer, items, total } = body
 
-    // Validate required fields
-    if (!customer?.name || !customer?.email || !customer?.address || !items?.length || !total) {
-      console.log('Missing required fields:', { customer, items, total })
+    // Validate required fields - handle both firstName/lastName and name formats
+    const customerName = customer?.name || (customer?.firstName && customer?.lastName ? `${customer.firstName} ${customer.lastName}` : '')
+    const customerAddress = customer?.address || `${customer?.city || ''}, ${customer?.state || ''}, ${customer?.zipCode || ''}, ${customer?.country || ''}`.replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, '')
+    
+    if (!customerName || !customer?.email || !customerAddress || !items?.length || !total) {
+      console.log('Missing required fields:', { customerName, email: customer?.email, customerAddress, items: items?.length, total })
       return NextResponse.json(
-        { error: 'Missing required fields', details: { customer, items, total } },
+        { error: 'Missing required fields', details: { customerName, email: customer?.email, customerAddress, itemsCount: items?.length, total } },
         { status: 400 }
       )
     }
@@ -39,13 +42,13 @@ export async function POST(request: NextRequest) {
     // Create order in database
     const order = await createOrder({
       customer: {
-        name: customer.name,
+        name: customerName,
         email: customer.email,
         phone: customer.phone || '',
-        address: customer.address,
+        address: customerAddress,
       },
       items: items.map((item: any) => ({
-        productId: item.id,
+        productId: item.productId || item.id,
         productName: item.name,
         price: parseFloat(item.price),
         quantity: item.quantity,
