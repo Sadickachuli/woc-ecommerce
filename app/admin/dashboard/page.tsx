@@ -18,7 +18,7 @@ import {
   Upload,
   Camera
 } from 'lucide-react'
-import { getProducts, orders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates } from '../../lib/data'
+import { getProducts, getOrders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates } from '../../lib/data'
 import { Product, Order } from '../../types'
 import toast from 'react-hot-toast'
 
@@ -313,6 +313,7 @@ export default function AdminDashboard() {
     }
   }
 
+  const orders = getOrders()
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
   const totalOrders = orders.length
   const totalProducts = currentProducts.length

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "1",
+    "name": "Innovative Solar Charger",
+    "description": "A portable solar charger designed for rural communities in Ghana. Provides reliable power for mobile devices and small appliances.",
+    "price": 299.99,
+    "image": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop",
+    "category": "Technology",
+    "stock": 50,
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "name": "Organic Shea Butter Cream",
+    "description": "Handcrafted shea butter cream made from locally sourced ingredients. Perfect for skin care and hair treatment.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+    "category": "Beauty",
+    "stock": 100,
+    "createdAt": "2024-01-20T00:00:00.000Z",
+    "updatedAt": "2024-01-20T00:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "name": "Recycled Plastic Bags",
+    "description": "Eco-friendly bags made from recycled plastic materials. Durable and stylish for everyday use.",
+    "price": 15.99,
+    "image": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=400&h=400&fit=crop",
+    "category": "Fashion",
+    "stock": 75,
+    "createdAt": "2024-01-25T00:00:00.000Z",
+    "updatedAt": "2024-01-25T00:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "name": "Traditional Bead Jewelry",
+    "description": "Handmade traditional bead jewelry crafted by local artisans. Each piece tells a unique story.",
+    "price": 45.99,
+    "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=400&fit=crop",
+    "category": "Jewelry",
+    "stock": 30,
+    "createdAt": "2024-02-01T00:00:00.000Z",
+    "updatedAt": "2024-02-01T00:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "name": "Local Honey",
+    "description": "Pure, natural honey harvested from local beekeepers. Rich in flavor and health benefits.",
+    "price": 12.99,
+    "image": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=400&fit=crop",
+    "category": "Food",
+    "stock": 60,
+    "createdAt": "2024-02-05T00:00:00.000Z",
+    "updatedAt": "2024-02-05T00:00:00.000Z"
+  },
+  {
+    "id": "6",
+    "name": "Bamboo Water Bottle",
+    "description": "Sustainable bamboo water bottle with natural antibacterial properties. Perfect for eco-conscious consumers.",
+    "price": 19.99,
+    "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop",
+    "category": "Lifestyle",
+    "stock": 40,
+    "createdAt": "2024-02-10T00:00:00.000Z",
+    "updatedAt": "2024-02-10T00:00:00.000Z"
+  },
+  {
+    "id": "7",
+    "name": "Organic Cotton T-Shirt",
+    "description": "Comfortable organic cotton t-shirt made from sustainable materials. Perfect for everyday wear.",
+    "price": 29.99,
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    "category": "clothing",
+    "stock": 50,
+    "createdAt": "2024-02-15T00:00:00.000Z",
+    "updatedAt": "2024-02-15T00:00:00.000Z"
+  }
+]
