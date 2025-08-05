@@ -4,26 +4,38 @@ import { products, orders, orderItems } from './schema'
 import type { NewProduct, NewOrder, NewOrderItem, Product, Order } from './schema'
 
 // Product operations
-export async function getAllProducts(): Promise<Product[]> {
+export async function getAllProducts(): Promise<any[]> {
   try {
-    return await db.select().from(products).orderBy(desc(products.createdAt))
+    const dbProducts = await db.select().from(products).orderBy(desc(products.createdAt))
+    // Convert price from string to number for frontend compatibility
+    return dbProducts.map(product => ({
+      ...product,
+      price: parseFloat(product.price)
+    }))
   } catch (error) {
     console.error('Error fetching products:', error)
     return []
   }
 }
 
-export async function getProductById(id: string): Promise<Product | null> {
+export async function getProductById(id: string): Promise<any | null> {
   try {
     const result = await db.select().from(products).where(eq(products.id, id)).limit(1)
-    return result[0] || null
+    const product = result[0]
+    if (product) {
+      return {
+        ...product,
+        price: parseFloat(product.price)
+      }
+    }
+    return null
   } catch (error) {
     console.error('Error fetching product:', error)
     return null
   }
 }
 
-export async function createProduct(productData: Omit<NewProduct, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product | null> {
+export async function createProduct(productData: Omit<NewProduct, 'id' | 'createdAt' | 'updatedAt'>): Promise<any | null> {
   try {
     const newProduct: NewProduct = {
       id: Date.now().toString(),
@@ -33,14 +45,21 @@ export async function createProduct(productData: Omit<NewProduct, 'id' | 'create
     }
     
     const result = await db.insert(products).values(newProduct).returning()
-    return result[0] || null
+    const product = result[0]
+    if (product) {
+      return {
+        ...product,
+        price: parseFloat(product.price)
+      }
+    }
+    return null
   } catch (error) {
     console.error('Error creating product:', error)
     return null
   }
 }
 
-export async function updateProduct(id: string, updates: Partial<Omit<NewProduct, 'id' | 'createdAt'>>): Promise<Product | null> {
+export async function updateProduct(id: string, updates: Partial<Omit<NewProduct, 'id' | 'createdAt'>>): Promise<any | null> {
   try {
     const result = await db
       .update(products)
@@ -48,7 +67,14 @@ export async function updateProduct(id: string, updates: Partial<Omit<NewProduct
       .where(eq(products.id, id))
       .returning()
     
-    return result[0] || null
+    const product = result[0]
+    if (product) {
+      return {
+        ...product,
+        price: parseFloat(product.price)
+      }
+    }
+    return null
   } catch (error) {
     console.error('Error updating product:', error)
     return null
@@ -66,15 +92,24 @@ export async function deleteProduct(id: string): Promise<boolean> {
 }
 
 // Order operations
-export async function getAllOrders(): Promise<(Order & { items: any[] })[]> {
+export async function getAllOrders(): Promise<any[]> {
   try {
     const ordersResult = await db.select().from(orders).orderBy(desc(orders.createdAt))
     
-    // Get order items for each order
+    // Get order items for each order and convert types
     const ordersWithItems = await Promise.all(
       ordersResult.map(async (order) => {
         const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-        return { ...order, items }
+        const convertedItems = items.map(item => ({
+          ...item,
+          price: parseFloat(item.price)
+        }))
+        
+        return { 
+          ...order, 
+          total: parseFloat(order.total),
+          items: convertedItems 
+        }
       })
     )
     
@@ -99,7 +134,7 @@ export async function createOrder(orderData: {
     quantity: number
   }>
   total: number
-}): Promise<Order | null> {
+}): Promise<any | null> {
   try {
     // Create order
     const newOrder: NewOrder = {
@@ -134,14 +169,18 @@ export async function createOrder(orderData: {
     
     await db.insert(orderItems).values(orderItemsData)
     
-    return createdOrder
+    // Convert total to number for frontend compatibility
+    return {
+      ...createdOrder,
+      total: parseFloat(createdOrder.total)
+    }
   } catch (error) {
     console.error('Error creating order:', error)
     return null
   }
 }
 
-export async function updateOrderStatus(id: string, status: string): Promise<Order | null> {
+export async function updateOrderStatus(id: string, status: string): Promise<any | null> {
   try {
     const result = await db
       .update(orders)
@@ -149,7 +188,14 @@ export async function updateOrderStatus(id: string, status: string): Promise<Ord
       .where(eq(orders.id, id))
       .returning()
     
-    return result[0] || null
+    const order = result[0]
+    if (order) {
+      return {
+        ...order,
+        total: parseFloat(order.total)
+      }
+    }
+    return null
   } catch (error) {
     console.error('Error updating order status:', error)
     return null
