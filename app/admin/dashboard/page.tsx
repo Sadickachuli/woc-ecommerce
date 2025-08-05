@@ -187,7 +187,7 @@ export default function AdminDashboard() {
   }
 
   const handleDeleteProduct = (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (typeof window !== 'undefined' && window.confirm('Are you sure you want to delete this product?')) {
       deleteProduct(productId)
       toast.success('Product deleted successfully!')
     }

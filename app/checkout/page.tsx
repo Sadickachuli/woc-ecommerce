@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle, Mail, Phone, MapPin } from 'lucide-react'
@@ -113,9 +113,21 @@ export default function CheckoutPage() {
     }
   }
 
+  // Handle empty cart redirect safely
+  useEffect(() => {
+    if (state.items.length === 0) {
+      router.push('/cart')
+    }
+  }, [state.items.length, router])
+
   if (state.items.length === 0) {
-    router.push('/cart')
-    return null
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Redirecting to cart...</h2>
+        </div>
+      </div>
+    )
   }
 
   if (isOrderComplete) {

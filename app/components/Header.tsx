@@ -18,6 +18,8 @@ export default function Header() {
 
   // Close mobile menu when clicking outside
   useEffect(() => {
+    if (typeof document === 'undefined') return
+    
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
       if (!target.closest('nav') && !target.closest('button')) {
