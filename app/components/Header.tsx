@@ -22,14 +22,19 @@ export default function Header() {
     
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
-      if (!target.closest('nav') && !target.closest('button')) {
+      // Check if click is outside the entire header element
+      if (!target.closest('header')) {
         setIsMenuOpen(false)
       }
     }
 
-    document.addEventListener('click', handleClickOutside)
+    // Only add listener when menu is open
+    if (isMenuOpen) {
+      document.addEventListener('click', handleClickOutside)
+    }
+    
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
+  }, [isMenuOpen])
 
   const handleNavigation = (path: string) => {
     console.log('Navigating to:', path)
@@ -138,9 +143,15 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('Hamburger clicked, current state:', isMenuOpen)
+                setIsMenuOpen(!isMenuOpen)
+              }}
+              className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors touch-manipulation"
               aria-label="Toggle mobile menu"
+              type="button"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -149,8 +160,8 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden border-t border-gray-200 py-4">
-            <div className="flex flex-col space-y-4">
+          <nav className="md:hidden border-t border-gray-200 py-4 bg-white">
+            <div className="flex flex-col space-y-1">
               <Link
                 href="/"
                 className={`px-3 py-2 rounded-md text-base font-medium ${
