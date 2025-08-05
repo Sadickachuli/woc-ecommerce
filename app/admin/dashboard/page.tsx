@@ -56,9 +56,24 @@ export default function AdminDashboard() {
 
   // Load products and subscribe to updates
   useEffect(() => {
-    const loadProducts = () => {
-      const products = getProducts()
-      setCurrentProducts(products)
+    const loadProducts = async () => {
+      try {
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const products = await response.json()
+          setCurrentProducts(products)
+        } else {
+          console.error('Failed to load products from API')
+          // Fallback to local data
+          const products = getProducts()
+          setCurrentProducts(products)
+        }
+      } catch (error) {
+        console.error('Error loading products:', error)
+        // Fallback to local data
+        const products = getProducts()
+        setCurrentProducts(products)
+      }
     }
     
     // Load products initially
@@ -70,9 +85,13 @@ export default function AdminDashboard() {
       loadProducts()
     })
     
-    // Cleanup subscription on unmount
+    // Also set up periodic refresh for better synchronization
+    const interval = setInterval(loadProducts, 5000) // Refresh every 5 seconds
+    
+    // Cleanup subscription and interval on unmount
     return () => {
       unsubscribe()
+      clearInterval(interval)
     }
   }, [])
 
@@ -122,29 +141,53 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!productForm.name || !productForm.description || !productForm.price || !productForm.category || !productForm.stock) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    // In a real app, you would upload the image to a server/cloud storage
-    // For now, we'll use the image preview URL or a placeholder
-    const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
+    try {
+      // In a real app, you would upload the image to a server/cloud storage
+      // For now, we'll use the image preview URL or a placeholder
+      const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
 
-    const newProduct = {
-      name: productForm.name,
-      description: productForm.description,
-      price: parseFloat(productForm.price),
-      category: productForm.category,
-      stock: parseInt(productForm.stock),
-      image: imageUrl
+      const newProduct = {
+        name: productForm.name,
+        description: productForm.description,
+        price: parseFloat(productForm.price),
+        category: productForm.category,
+        stock: parseInt(productForm.stock),
+        image: imageUrl
+      }
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct),
+      })
+
+      if (response.ok) {
+        const addedProduct = await response.json()
+        resetProductForm()
+        setShowAddProduct(false)
+        toast.success('Product added successfully!')
+        // Reload products to reflect changes
+        const response2 = await fetch('/api/products')
+        if (response2.ok) {
+          const products = await response2.json()
+          setCurrentProducts(products)
+        }
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to add product')
+      }
+    } catch (error) {
+      console.error('Error adding product:', error)
+      toast.error('Failed to add product')
     }
-
-    const addedProduct = addProduct(newProduct)
-    resetProductForm()
-    setShowAddProduct(false)
-    toast.success('Product added successfully!')
   }
 
   const handleEditProduct = (product: Product) => {
@@ -160,7 +203,7 @@ export default function AdminDashboard() {
     setImagePreview(product.image)
   }
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!editingProduct) return
 
     if (!productForm.name || !productForm.description || !productForm.price || !productForm.category || !productForm.stock) {
@@ -168,28 +211,68 @@ export default function AdminDashboard() {
       return
     }
 
-    const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
+    try {
+      const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
 
-    const updatedProduct = {
-      ...editingProduct,
-      name: productForm.name,
-      description: productForm.description,
-      price: parseFloat(productForm.price),
-      category: productForm.category,
-      stock: parseInt(productForm.stock),
-      image: imageUrl
+      const updatedProduct = {
+        id: editingProduct.id,
+        name: productForm.name,
+        description: productForm.description,
+        price: parseFloat(productForm.price),
+        category: productForm.category,
+        stock: parseInt(productForm.stock),
+        image: imageUrl
+      }
+
+      const response = await fetch('/api/products', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduct),
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        setEditingProduct(null)
+        resetProductForm()
+        toast.success('Product updated successfully!')
+        // Reload products to reflect changes
+        const response2 = await fetch('/api/products')
+        if (response2.ok) {
+          const products = await response2.json()
+          setCurrentProducts(products)
+        }
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to update product')
+      }
+    } catch (error) {
+      console.error('Error updating product:', error)
+      toast.error('Failed to update product')
     }
-
-    updateProduct(editingProduct.id, updatedProduct)
-    setEditingProduct(null)
-    resetProductForm()
-    toast.success('Product updated successfully!')
   }
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (typeof window !== 'undefined' && window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(productId)
-      toast.success('Product deleted successfully!')
+      try {
+        const response = await fetch(`/api/products?id=${productId}`, {
+          method: 'DELETE',
+        })
+
+        if (response.ok) {
+          toast.success('Product deleted successfully!')
+          // Reload products to reflect changes
+          const products = getProducts()
+          setCurrentProducts(products)
+        } else {
+          const error = await response.json()
+          toast.error(error.error || 'Failed to delete product')
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error)
+        toast.error('Failed to delete product')
+      }
     }
   }
 

@@ -14,10 +14,24 @@ export default function ProductsPage() {
 
   // Load products from data store and subscribe to updates
   useEffect(() => {
-    const loadProducts = () => {
-      // Get the current products from the data store
-      const products = getProducts()
-      setCurrentProducts(products)
+    const loadProducts = async () => {
+      try {
+        // First try to get products from API
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const products = await response.json()
+          setCurrentProducts(products)
+        } else {
+          // Fallback to local data store
+          const products = getProducts()
+          setCurrentProducts(products)
+        }
+      } catch (error) {
+        console.error('Error loading products:', error)
+        // Fallback to local data store
+        const products = getProducts()
+        setCurrentProducts(products)
+      }
     }
     
     // Load products initially
