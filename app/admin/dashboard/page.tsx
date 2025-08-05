@@ -18,7 +18,7 @@ import {
   Upload,
   Camera
 } from 'lucide-react'
-import { getProducts, getOrders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates } from '../../lib/data'
+import { getProducts, getOrders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates, exportData, importData } from '../../lib/data'
 import { Product, Order } from '../../types'
 import toast from 'react-hot-toast'
 
@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [imagePreview, setImagePreview] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const backupFileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
   // Product form state
@@ -313,6 +314,51 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleExportData = () => {
+    try {
+      const data = exportData()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `woc-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success('Data exported successfully!')
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error('Failed to export data')
+    }
+  }
+
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string)
+        importData(data)
+        // Refresh products list
+        const products = getProducts()
+        setCurrentProducts(products)
+        toast.success('Data imported successfully!')
+      } catch (error) {
+        console.error('Import error:', error)
+        toast.error('Failed to import data - invalid file format')
+      }
+    }
+    reader.readAsText(file)
+    
+    // Reset file input
+    if (backupFileInputRef.current) {
+      backupFileInputRef.current.value = ''
+    }
+  }
+
   const orders = getOrders()
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
   const totalOrders = orders.length
@@ -493,13 +539,39 @@ export default function AdminDashboard() {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900">Products Management</h1>
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Product</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                {/* Backup/Restore Buttons */}
+                <button
+                  onClick={handleExportData}
+                  className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  title="Export all data as backup"
+                >
+                  📥 Export
+                </button>
+                <button
+                  onClick={() => backupFileInputRef.current?.click()}
+                  className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  title="Import data from backup"
+                >
+                  📤 Import
+                </button>
+                <input
+                  ref={backupFileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportData}
+                  className="hidden"
+                />
+                
+                {/* Add Product Button */}
+                <button
+                  onClick={() => setShowAddProduct(true)}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add Product</span>
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
