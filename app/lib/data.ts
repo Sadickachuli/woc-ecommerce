@@ -83,8 +83,13 @@ export let products: Product[] = [
 
 export let orders: Order[] = []
 
-// Save products to localStorage
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined'
+
+// Save products to localStorage (client-side only)
 const saveProductsToStorage = () => {
+  if (!isBrowser) return
+  
   try {
     localStorage.setItem('ecommerce_products', JSON.stringify(products))
     console.log('Products saved to localStorage:', products.length)
@@ -93,8 +98,10 @@ const saveProductsToStorage = () => {
   }
 }
 
-// Load products from localStorage
+// Load products from localStorage (client-side only)
 const loadProductsFromStorage = () => {
+  if (!isBrowser) return
+  
   try {
     const stored = localStorage.getItem('ecommerce_products')
     if (stored) {
@@ -112,8 +119,17 @@ const loadProductsFromStorage = () => {
   }
 }
 
-// Initialize products from localStorage
-loadProductsFromStorage()
+// Initialize products from localStorage (only in browser)
+if (isBrowser) {
+  loadProductsFromStorage()
+}
+
+// Export initialization function for client-side use
+export const initializeProducts = () => {
+  if (isBrowser) {
+    loadProductsFromStorage()
+  }
+}
 
 // Callback system for product updates
 let productUpdateCallbacks: (() => void)[] = []

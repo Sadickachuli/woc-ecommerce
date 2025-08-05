@@ -19,7 +19,9 @@ export default function AdminLogin() {
     // Check credentials
     if (email === 'wingsofchangeghana@gmail.com' && password === 'woc0551401709') {
       // In a real app, you'd set up proper session management
-      localStorage.setItem('adminAuthenticated', 'true')
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('adminAuthenticated', 'true')
+      }
       toast.success('Login successful!')
       router.push('/admin/dashboard')
     } else {

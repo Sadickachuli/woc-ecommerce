@@ -44,11 +44,13 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuthenticated')
-    if (!auth) {
-      router.push('/admin')
-    } else {
-      setIsAuthenticated(true)
+    if (typeof window !== 'undefined') {
+      const auth = localStorage.getItem('adminAuthenticated')
+      if (!auth) {
+        router.push('/admin')
+      } else {
+        setIsAuthenticated(true)
+      }
     }
   }, [router])
 
@@ -75,7 +77,9 @@ export default function AdminDashboard() {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuthenticated')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('adminAuthenticated')
+    }
     router.push('/admin')
   }
 

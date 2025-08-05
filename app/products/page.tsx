@@ -29,7 +29,7 @@ export default function ProductsPage() {
       loadProducts()
     })
 
-    // Listen for localStorage changes (for cross-tab sync)
+    // Listen for localStorage changes (for cross-tab sync) - only in browser
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'ecommerce_products') {
         console.log('localStorage change detected, reloading products...')
@@ -37,8 +37,10 @@ export default function ProductsPage() {
       }
     }
 
-    // Add storage event listener
-    window.addEventListener('storage', handleStorageChange)
+    // Add storage event listener only in browser
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
+    }
     
     // Also poll every 2 seconds as a backup
     const interval = setInterval(loadProducts, 2000)
@@ -46,7 +48,9 @@ export default function ProductsPage() {
     // Cleanup subscription and listeners on unmount
     return () => {
       unsubscribe()
-      window.removeEventListener('storage', handleStorageChange)
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange)
+      }
       clearInterval(interval)
     }
   }, [])
