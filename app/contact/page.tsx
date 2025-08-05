@@ -207,9 +207,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
-                      Wings of Change Ghana<br />
-                      Accra, Ghana<br />
-                      West Africa
+                      P.O.Box<br />
+                      Wings Of Change Ghana<br />
+                      Donaso- Ejisu<br />
+                      Kumasi Ghana
                     </p>
                   </div>
                 </div>
@@ -221,9 +222,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
                     <p className="text-gray-600">
-                      Monday - Friday: 8:00 AM - 5:00 PM<br />
-                      Saturday: 9:00 AM - 3:00 PM<br />
-                      Sunday: Closed<br />
+                      Monday - Friday: 8:00 AM - 7:00 PM<br />
+                      Saturday: 7:00 AM - 7:00 PM<br />
+                      Sunday: 1:00 PM - 7:00 PM<br />
                       <span className="text-sm">(GMT Time Zone)</span>
                     </p>
                   </div>
@@ -237,15 +238,15 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-900">How do I track my order?</h4>
-                  <p className="text-sm text-gray-600">You'll receive a tracking number via email once your order ships.</p>
+                  <p className="text-sm text-gray-600">Please call us at +233 55 832 2038 to check the status of your order.</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">What is your return policy?</h4>
-                  <p className="text-sm text-gray-600">We offer a 30-day return policy for unused items in original packaging.</p>
+                  <p className="text-sm text-gray-600">We offer a 7-day return policy for unused items in original packaging.</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">Do you ship internationally?</h4>
-                  <p className="text-sm text-gray-600">Currently, we ship to the US and Canada. International shipping coming soon!</p>
+                  <p className="text-sm text-gray-600">Yes, we ship all across Ghana and internationally. Buyers are responsible for shipping costs.</p>
                 </div>
               </div>
             </div>

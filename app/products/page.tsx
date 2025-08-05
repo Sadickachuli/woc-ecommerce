@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import ProductGrid from '../components/ProductGrid'
-import { Search, Filter, RefreshCw } from 'lucide-react'
+import { Search, Filter } from 'lucide-react'
 import { Product } from '../types'
 import { getProducts, subscribeToProductUpdates } from '../lib/data'
 
@@ -10,7 +10,7 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentProducts, setCurrentProducts] = useState<Product[]>([])
-  const [showDebug, setShowDebug] = useState(false)
+
 
   // Load products from data store and subscribe to updates
   useEffect(() => {
@@ -51,10 +51,7 @@ export default function ProductsPage() {
     }
   }, [])
 
-  const loadProducts = () => {
-    const products = getProducts()
-    setCurrentProducts(products)
-  }
+
 
   const categories = [
     { id: 'all', name: 'All Products' },
@@ -85,44 +82,10 @@ export default function ProductsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Our Products</h1>
           <p className="text-gray-600">Discover sustainable and eco-friendly products that make a difference.</p>
-          
-          {/* Debug Buttons */}
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"
-            >
-              {showDebug ? 'Hide Debug' : 'Show Debug Info'}
-            </button>
-            <button
-              onClick={loadProducts}
-              className="px-4 py-2 bg-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-1"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh Products
-            </button>
-          </div>
+
         </div>
 
-        {/* Debug Section */}
-        {showDebug && (
-          <div className="mb-6 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-            <h3 className="font-bold text-yellow-800 mb-2">Debug Information:</h3>
-            <p className="text-sm text-yellow-700">Total Products: {currentProducts.length}</p>
-            <p className="text-sm text-yellow-700">Selected Category: {selectedCategory}</p>
-            <p className="text-sm text-yellow-700">Filtered Products: {filteredProducts.length}</p>
-            <div className="mt-2">
-              <p className="text-sm font-semibold text-yellow-800">All Products:</p>
-              <ul className="text-xs text-yellow-700">
-                {currentProducts.map(product => (
-                  <li key={product.id}>
-                    {product.name} - Category: {product.category}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
+
 
         {/* Search and Filter */}
         <div className="mb-8 space-y-4">
