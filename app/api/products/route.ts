@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { products, addProduct, updateProduct, deleteProduct } from '../../lib/data'
+import { getProducts, addProduct, updateProduct, deleteProduct } from '../../lib/data'
 
 export async function GET() {
+  const products = getProducts()
   return NextResponse.json(products)
 }
 
