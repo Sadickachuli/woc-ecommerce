@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Send email to the business owner
     const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: [process.env.SELLER_EMAIL || 'mustaphasadick705@gmail.com'],
+      to: [process.env.SELLER_EMAIL || 'wingsofchangeghana@gmail.com'],
       subject: `New Contact Form Message: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
               <ul style="color: #555; margin: 0; padding-left: 20px;">
                 <li style="margin-bottom: 8px;">Our team will review your message within 24 hours</li>
                 <li style="margin-bottom: 8px;">We'll respond directly to your email: ${email}</li>
-                <li style="margin-bottom: 8px;">For urgent matters, you can also call us at +1 (555) 123-4567</li>
+                <li style="margin-bottom: 8px;">For urgent matters, you can also call us at +233 55 832 2038</li>
               </ul>
             </div>
             
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
               <p style="color: #666; font-size: 14px; margin: 0;">
                 Best regards,<br>
                 The Wings of Change Team<br>
-                <a href="mailto:mustaphasadick705@gmail.com" style="color: #667eea; text-decoration: none;">mustaphasadick705@gmail.com</a>
+                <a href="mailto:wingsofchangeghana@gmail.com" style="color: #667eea; text-decoration: none;">wingsofchangeghana@gmail.com</a>
               </p>
             </div>
           </div>

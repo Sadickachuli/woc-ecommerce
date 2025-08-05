@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const order = await request.json()
     
     // Create email content for seller
-    const sellerEmail = process.env.SELLER_EMAIL || 'mustaphasadick705@gmail.com'
+    const sellerEmail = process.env.SELLER_EMAIL || 'wingsofchangeghana@gmail.com'
     
     // Send email to seller
     const sellerEmailResult = await resend.emails.send({
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           
           <div style="margin-top: 20px; text-align: center;">
             <p style="color: #6b7280;">
-              Questions? Contact us at mustaphasadick705@gmail.com
+              Questions? Contact us at wingsofchangeghana@gmail.com
             </p>
           </div>
         </div>

@@ -80,7 +80,7 @@ export default function ContactPage() {
 
             {submitStatus === 'error' && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800">Sorry, there was an error sending your message. Please try again or contact us directly at mustaphasadick705@gmail.com.</p>
+                <p className="text-red-800">Sorry, there was an error sending your message. Please try again or contact us directly at wingsofchangeghana@gmail.com.</p>
               </div>
             )}
 
@@ -184,7 +184,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">mustaphasadick705@gmail.com</p>
+                    <p className="text-gray-600">wingsofchangeghana@gmail.com</p>
                     <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                   </div>
                 </div>
@@ -195,8 +195,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
-                    <p className="text-sm text-gray-500">Monday - Friday, 9AM - 6PM EST</p>
+                    <p className="text-gray-600">+233 55 832 2038</p>
+                    <p className="text-sm text-gray-500">Monday - Friday, 9AM - 6PM GMT</p>
                   </div>
                 </div>
 
@@ -207,9 +207,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
-                      123 Sustainable Street<br />
-                      Green City, GC 12345<br />
-                      United States
+                      Wings of Change Ghana<br />
+                      Accra, Ghana<br />
+                      West Africa
                     </p>
                   </div>
                 </div>
@@ -221,9 +221,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
                     <p className="text-gray-600">
-                      Monday - Friday: 9:00 AM - 6:00 PM<br />
-                      Saturday: 10:00 AM - 4:00 PM<br />
-                      Sunday: Closed
+                      Monday - Friday: 8:00 AM - 5:00 PM<br />
+                      Saturday: 9:00 AM - 3:00 PM<br />
+                      Sunday: Closed<br />
+                      <span className="text-sm">(GMT Time Zone)</span>
                     </p>
                   </div>
                 </div>
