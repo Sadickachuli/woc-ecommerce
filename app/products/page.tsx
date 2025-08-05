@@ -10,11 +10,12 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentProducts, setCurrentProducts] = useState<Product[]>([])
-
+  const [isLoading, setIsLoading] = useState(true)
 
   // Load products from data store and subscribe to updates
   useEffect(() => {
     const loadProducts = async () => {
+      setIsLoading(true)
       try {
         // First try to get products from API
         const response = await fetch('/api/products')
@@ -36,6 +37,8 @@ export default function ProductsPage() {
           console.error('Error loading products from database:', dbError)
           setCurrentProducts([])
         }
+      } finally {
+        setIsLoading(false)
       }
     }
     
@@ -141,12 +144,22 @@ export default function ProductsPage() {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Showing {filteredProducts.length} of {currentProducts.length} products
+            {isLoading ? (
+              "Loading products..."
+            ) : (
+              `Showing ${filteredProducts.length} of ${currentProducts.length} products`
+            )}
           </p>
         </div>
 
         {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading products...</h3>
+            <p className="text-gray-600">Please wait while we fetch the latest products.</p>
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <ProductGrid products={filteredProducts} />
         ) : (
           <div className="text-center py-12">
