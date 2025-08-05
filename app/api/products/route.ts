@@ -19,16 +19,29 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/products - Creating new product')
     const body = await request.json()
+    console.log('Request body:', body)
+    
     const { name, description, price, image, category, stock } = body
 
     // Validate required fields
     if (!name || !description || !price || !image || !category || stock === undefined) {
+      console.log('Missing required fields:', { name, description, price, image, category, stock })
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields', details: { name, description, price, image, category, stock } },
         { status: 400 }
       )
     }
+
+    console.log('Creating product with data:', {
+      name,
+      description,
+      price: price.toString(),
+      image,
+      category,
+      stock: parseInt(stock),
+    })
 
     const product = await createProduct({
       name,
@@ -39,18 +52,22 @@ export async function POST(request: NextRequest) {
       stock: parseInt(stock),
     })
 
+    console.log('Product creation result:', product)
+
     if (!product) {
+      console.error('createProduct returned null/undefined')
       return NextResponse.json(
-        { error: 'Failed to create product' },
+        { error: 'Failed to create product - database operation failed' },
         { status: 500 }
       )
     }
 
+    console.log('Product created successfully:', product.id)
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
-    console.error('Error creating product:', error)
+    console.error('Error creating product - full error:', error)
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { error: 'Failed to create product', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

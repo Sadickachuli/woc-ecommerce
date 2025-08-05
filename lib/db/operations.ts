@@ -37,6 +37,8 @@ export async function getProductById(id: string): Promise<any | null> {
 
 export async function createProduct(productData: Omit<NewProduct, 'id' | 'createdAt' | 'updatedAt'>): Promise<any | null> {
   try {
+    console.log('Database createProduct called with:', productData)
+    
     const newProduct: NewProduct = {
       id: Date.now().toString(),
       ...productData,
@@ -44,17 +46,29 @@ export async function createProduct(productData: Omit<NewProduct, 'id' | 'create
       updatedAt: new Date(),
     }
     
+    console.log('Inserting product into database:', newProduct)
+    
     const result = await db.insert(products).values(newProduct).returning()
+    console.log('Database insert result:', result)
+    
     const product = result[0]
     if (product) {
-      return {
+      const convertedProduct = {
         ...product,
         price: parseFloat(product.price)
       }
+      console.log('Product created successfully:', convertedProduct)
+      return convertedProduct
     }
+    
+    console.error('No product returned from database insert')
     return null
   } catch (error) {
-    console.error('Error creating product:', error)
+    console.error('Error creating product in database:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return null
   }
 }
