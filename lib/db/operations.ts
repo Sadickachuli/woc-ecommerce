@@ -216,9 +216,16 @@ export async function updateOrderStatus(id: string, status: string): Promise<any
   }
 }
 
-// Initialize database with default products
+// Initialize database with default products (only run once)
+let databaseInitialized = false
+
 export async function initializeDatabase(): Promise<void> {
   try {
+    // Skip if already initialized in this session
+    if (databaseInitialized) {
+      return
+    }
+    
     // Check if products already exist
     const existingProducts = await getAllProducts()
     
@@ -282,6 +289,9 @@ export async function initializeDatabase(): Promise<void> {
       
       console.log('Database initialized with default products!')
     }
+    
+    // Mark as initialized to prevent re-initialization
+    databaseInitialized = true
   } catch (error) {
     console.error('Error initializing database:', error)
   }

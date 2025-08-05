@@ -374,6 +374,27 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleInitializeDefaults = async () => {
+    try {
+      const response = await fetch('/api/products/initialize', {
+        method: 'POST',
+      })
+      
+      if (response.ok) {
+        // Refresh products list
+        const products = await getProducts()
+        setCurrentProducts(products)
+        toast.success('Default products added successfully!')
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to add default products')
+      }
+    } catch (error) {
+      console.error('Initialize error:', error)
+      toast.error('Failed to add default products')
+    }
+  }
+
   const [orders, setOrders] = useState<any[]>([])
   
   // Load orders
@@ -584,6 +605,13 @@ export default function AdminDashboard() {
                   title="Import data from backup"
                 >
                   📤 Import
+                </button>
+                <button
+                  onClick={handleInitializeDefaults}
+                  className="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  title="Add default sample products"
+                >
+                  🌱 Add Samples
                 </button>
                 <input
                   ref={backupFileInputRef}

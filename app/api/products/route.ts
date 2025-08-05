@@ -3,9 +3,6 @@ import { getAllProducts, createProduct, updateProduct, deleteProduct, initialize
 
 export async function GET() {
   try {
-    // Initialize database with default products if empty
-    await initializeDatabase()
-    
     const products = await getAllProducts()
     return NextResponse.json(products)
   } catch (error) {
