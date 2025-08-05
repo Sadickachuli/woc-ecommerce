@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { products, addProduct, updateProduct, deleteProduct } from '../../../lib/data'
+import { products, addProduct, updateProduct, deleteProduct } from '../../lib/data'
 
 export async function GET() {
   return NextResponse.json(products)
