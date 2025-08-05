@@ -23,14 +23,19 @@ export default function ProductsPage() {
           setCurrentProducts(products)
         } else {
           // Fallback to local data store
-          const products = getProducts()
+          const products = await getProducts()
           setCurrentProducts(products)
         }
       } catch (error) {
         console.error('Error loading products:', error)
         // Fallback to local data store
-        const products = getProducts()
-        setCurrentProducts(products)
+        try {
+          const products = await getProducts()
+          setCurrentProducts(products)
+        } catch (dbError) {
+          console.error('Error loading products from database:', dbError)
+          setCurrentProducts([])
+        }
       }
     }
     

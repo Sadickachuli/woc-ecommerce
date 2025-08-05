@@ -329,9 +329,9 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     try {
-      const data = exportData()
+      const data = await exportData()
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -353,12 +353,12 @@ export default function AdminDashboard() {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = JSON.parse(e.target?.result as string)
-        importData(data)
+        await importData(data)
         // Refresh products list
-        const products = getProducts()
+        const products = await getProducts()
         setCurrentProducts(products)
         toast.success('Data imported successfully!')
       } catch (error) {
@@ -374,7 +374,22 @@ export default function AdminDashboard() {
     }
   }
 
-  const orders = getOrders()
+  const [orders, setOrders] = useState<any[]>([])
+  
+  // Load orders
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const ordersData = await getOrders()
+        setOrders(ordersData)
+      } catch (error) {
+        console.error('Error loading orders:', error)
+        setOrders([])
+      }
+    }
+    loadOrders()
+  }, [])
+
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
   const totalOrders = orders.length
   const totalProducts = currentProducts.length
