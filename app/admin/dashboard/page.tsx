@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const [currentProducts, setCurrentProducts] = useState<Product[]>([])
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
     }
   }, [router])
 
-  // Load products and subscribe to updates
+  // Load products initially
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -63,7 +64,6 @@ export default function AdminDashboard() {
           const products = await response.json()
           setCurrentProducts(products)
         } else {
-          console.error('Failed to load products from API')
           // Fallback to local data
           const products = getProducts()
           setCurrentProducts(products)
@@ -76,23 +76,8 @@ export default function AdminDashboard() {
       }
     }
     
-    // Load products initially
+    // Load products only once on mount
     loadProducts()
-    
-    // Subscribe to product updates
-    const unsubscribe = subscribeToProductUpdates(() => {
-      console.log('Admin: Product update detected, reloading products...')
-      loadProducts()
-    })
-    
-    // Also set up periodic refresh for better synchronization
-    const interval = setInterval(loadProducts, 5000) // Refresh every 5 seconds
-    
-    // Cleanup subscription and interval on unmount
-    return () => {
-      unsubscribe()
-      clearInterval(interval)
-    }
   }, [])
 
   const handleLogout = () => {
@@ -147,20 +132,34 @@ export default function AdminDashboard() {
       return
     }
 
+    setIsLoading(true)
+
+    const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
+
+    const newProduct = {
+      name: productForm.name,
+      description: productForm.description,
+      price: parseFloat(productForm.price),
+      category: productForm.category,
+      stock: parseInt(productForm.stock),
+      image: imageUrl
+    }
+
+    // Create optimistic product with temporary ID
+    const optimisticProduct = {
+      id: `temp-${Date.now()}`,
+      ...newProduct,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+
+    // Optimistic update - add product immediately to UI
+    setCurrentProducts(prev => [...prev, optimisticProduct])
+    resetProductForm()
+    setShowAddProduct(false)
+    toast.success('Product added successfully!')
+
     try {
-      // In a real app, you would upload the image to a server/cloud storage
-      // For now, we'll use the image preview URL or a placeholder
-      const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
-
-      const newProduct = {
-        name: productForm.name,
-        description: productForm.description,
-        price: parseFloat(productForm.price),
-        category: productForm.category,
-        stock: parseInt(productForm.stock),
-        image: imageUrl
-      }
-
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
@@ -171,22 +170,27 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const addedProduct = await response.json()
-        resetProductForm()
-        setShowAddProduct(false)
-        toast.success('Product added successfully!')
-        // Reload products to reflect changes
-        const response2 = await fetch('/api/products')
-        if (response2.ok) {
-          const products = await response2.json()
-          setCurrentProducts(products)
-        }
+        // Replace optimistic product with real product
+        setCurrentProducts(prev => 
+          prev.map(p => p.id === optimisticProduct.id ? addedProduct : p)
+        )
       } else {
+        // Revert optimistic update on error
+        setCurrentProducts(prev => 
+          prev.filter(p => p.id !== optimisticProduct.id)
+        )
         const error = await response.json()
         toast.error(error.error || 'Failed to add product')
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setCurrentProducts(prev => 
+        prev.filter(p => p.id !== optimisticProduct.id)
+      )
       console.error('Error adding product:', error)
       toast.error('Failed to add product')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -211,43 +215,66 @@ export default function AdminDashboard() {
       return
     }
 
+    const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
+
+    const updatedProduct = {
+      ...editingProduct,
+      name: productForm.name,
+      description: productForm.description,
+      price: parseFloat(productForm.price),
+      category: productForm.category,
+      stock: parseInt(productForm.stock),
+      image: imageUrl,
+      updatedAt: new Date()
+    }
+
+    // Store original product for potential rollback
+    const originalProduct = editingProduct
+
+    // Optimistic update - update product immediately in UI
+    setCurrentProducts(prev => 
+      prev.map(p => p.id === editingProduct.id ? updatedProduct : p)
+    )
+    setEditingProduct(null)
+    resetProductForm()
+    toast.success('Product updated successfully!')
+
     try {
-      const imageUrl = imagePreview || productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
-
-      const updatedProduct = {
-        id: editingProduct.id,
-        name: productForm.name,
-        description: productForm.description,
-        price: parseFloat(productForm.price),
-        category: productForm.category,
-        stock: parseInt(productForm.stock),
-        image: imageUrl
-      }
-
       const response = await fetch('/api/products', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedProduct),
+        body: JSON.stringify({
+          id: editingProduct.id,
+          name: productForm.name,
+          description: productForm.description,
+          price: parseFloat(productForm.price),
+          category: productForm.category,
+          stock: parseInt(productForm.stock),
+          image: imageUrl
+        }),
       })
 
       if (response.ok) {
-        const updated = await response.json()
-        setEditingProduct(null)
-        resetProductForm()
-        toast.success('Product updated successfully!')
-        // Reload products to reflect changes
-        const response2 = await fetch('/api/products')
-        if (response2.ok) {
-          const products = await response2.json()
-          setCurrentProducts(products)
-        }
+        const serverUpdatedProduct = await response.json()
+        // Update with server response (in case server modified anything)
+        setCurrentProducts(prev => 
+          prev.map(p => p.id === editingProduct.id ? serverUpdatedProduct : p)
+        )
       } else {
+        // Revert optimistic update on error
+        setCurrentProducts(prev => 
+          prev.map(p => p.id === editingProduct.id ? originalProduct : p)
+        )
         const error = await response.json()
         toast.error(error.error || 'Failed to update product')
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setCurrentProducts(prev => 
+        prev.map(p => p.id === editingProduct.id ? originalProduct : p)
+      )
       console.error('Error updating product:', error)
       toast.error('Failed to update product')
     }
@@ -255,21 +282,31 @@ export default function AdminDashboard() {
 
   const handleDeleteProduct = async (productId: string) => {
     if (typeof window !== 'undefined' && window.confirm('Are you sure you want to delete this product?')) {
+      // Store the product being deleted for potential rollback
+      const productToDelete = currentProducts.find(p => p.id === productId)
+      
+      // Optimistic update - remove product immediately from UI
+      setCurrentProducts(prev => prev.filter(p => p.id !== productId))
+      toast.success('Product deleted successfully!')
+
       try {
         const response = await fetch(`/api/products?id=${productId}`, {
           method: 'DELETE',
         })
 
-        if (response.ok) {
-          toast.success('Product deleted successfully!')
-          // Reload products to reflect changes
-          const products = getProducts()
-          setCurrentProducts(products)
-        } else {
+        if (!response.ok) {
+          // Revert optimistic update on error
+          if (productToDelete) {
+            setCurrentProducts(prev => [...prev, productToDelete])
+          }
           const error = await response.json()
           toast.error(error.error || 'Failed to delete product')
         }
       } catch (error) {
+        // Revert optimistic update on error
+        if (productToDelete) {
+          setCurrentProducts(prev => [...prev, productToDelete])
+        }
         console.error('Error deleting product:', error)
         toast.error('Failed to delete product')
       }

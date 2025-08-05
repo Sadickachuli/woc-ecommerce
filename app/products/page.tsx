@@ -37,7 +37,7 @@ export default function ProductsPage() {
     // Load products initially
     loadProducts()
     
-    // Subscribe to product updates
+    // Subscribe to product updates for real-time sync
     const unsubscribe = subscribeToProductUpdates(() => {
       console.log('Product update detected, reloading products...')
       loadProducts()
@@ -56,16 +56,12 @@ export default function ProductsPage() {
       window.addEventListener('storage', handleStorageChange)
     }
     
-    // Also poll every 2 seconds as a backup
-    const interval = setInterval(loadProducts, 2000)
-    
     // Cleanup subscription and listeners on unmount
     return () => {
       unsubscribe()
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', handleStorageChange)
       }
-      clearInterval(interval)
     }
   }, [])
 
