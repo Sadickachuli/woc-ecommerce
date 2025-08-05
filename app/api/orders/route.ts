@@ -19,16 +19,22 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/orders - Creating new order')
     const body = await request.json()
+    console.log('Order request body:', body)
+    
     const { customer, items, total } = body
 
     // Validate required fields
     if (!customer?.name || !customer?.email || !customer?.address || !items?.length || !total) {
+      console.log('Missing required fields:', { customer, items, total })
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields', details: { customer, items, total } },
         { status: 400 }
       )
     }
+
+    console.log('Order validation passed, creating order...')
 
     // Create order in database
     const order = await createOrder({
@@ -47,12 +53,17 @@ export async function POST(request: NextRequest) {
       total: parseFloat(total),
     })
 
+    console.log('Order creation result:', order)
+
     if (!order) {
+      console.error('createOrder returned null/undefined')
       return NextResponse.json(
-        { error: 'Failed to create order' },
+        { error: 'Failed to create order - database operation failed' },
         { status: 500 }
       )
     }
+
+    console.log('Order created successfully:', order.id)
 
     // Send email notifications
     const sellerEmail = process.env.SELLER_EMAIL || 'wingsofchangeghana@gmail.com'
@@ -150,9 +161,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(order, { status: 201 })
   } catch (error) {
-    console.error('Error creating order:', error)
+    console.error('Error creating order - full error:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

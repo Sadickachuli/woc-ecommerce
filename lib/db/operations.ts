@@ -150,6 +150,8 @@ export async function createOrder(orderData: {
   total: number
 }): Promise<any | null> {
   try {
+    console.log('Database createOrder called with:', orderData)
+    
     // Create order
     const newOrder: NewOrder = {
       id: Date.now().toString(),
@@ -163,12 +165,19 @@ export async function createOrder(orderData: {
       updatedAt: new Date(),
     }
     
+    console.log('Inserting order into database:', newOrder)
+    
     const orderResult = await db.insert(orders).values(newOrder).returning()
+    console.log('Order insert result:', orderResult)
+    
     const createdOrder = orderResult[0]
     
     if (!createdOrder) {
+      console.error('No order returned from database insert')
       throw new Error('Failed to create order')
     }
+    
+    console.log('Order created successfully, now creating order items...')
     
     // Create order items
     const orderItemsData: NewOrderItem[] = orderData.items.map((item) => ({
@@ -181,15 +190,27 @@ export async function createOrder(orderData: {
       createdAt: new Date(),
     }))
     
+    console.log('Inserting order items:', orderItemsData)
+    
     await db.insert(orderItems).values(orderItemsData)
     
+    console.log('Order items created successfully')
+    
     // Convert total to number for frontend compatibility
-    return {
+    const finalOrder = {
       ...createdOrder,
       total: parseFloat(createdOrder.total)
     }
+    
+    console.log('Order creation completed successfully:', finalOrder)
+    
+    return finalOrder
   } catch (error) {
-    console.error('Error creating order:', error)
+    console.error('Error creating order in database:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return null
   }
 }
