@@ -90,10 +90,10 @@ export async function POST(request: NextRequest) {
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3>Customer Information</h3>
-              <p><strong>Name:</strong> ${customer.name}</p>
+              <p><strong>Name:</strong> ${customerName}</p>
               <p><strong>Email:</strong> ${customer.email}</p>
               ${customer.phone ? `<p><strong>Phone:</strong> ${customer.phone}</p>` : ''}
-              <p><strong>Address:</strong> ${customer.address}</p>
+              <p><strong>Address:</strong> ${customerAddress}</p>
             </div>
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2563eb;">Thank you for your order!</h2>
-            <p>Dear ${customer.name},</p>
+            <p>Dear ${customerName},</p>
             <p>We've received your order and will process it shortly. Here are your order details:</p>
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3>Shipping Address</h3>
-              <p>${customer.address}</p>
+              <p>${customerAddress}</p>
             </div>
             
             <p>We'll send you updates about your order status. If you have any questions, please contact us:</p>
