@@ -18,7 +18,7 @@ import {
   Upload,
   Camera
 } from 'lucide-react'
-import { getProducts, getOrders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates, exportData, importData } from '../../lib/data'
+import { getProducts, getOrders, addProduct, updateProduct, deleteProduct, subscribeToProductUpdates, exportData, importData, notifyProductUpdate } from '../../lib/data'
 import { Product, Order } from '../../types'
 import toast from 'react-hot-toast'
 
@@ -65,20 +65,35 @@ export default function AdminDashboard() {
           const products = await response.json()
           setCurrentProducts(products)
         } else {
-          // Fallback to local data
-          const products = getProducts()
+          // Fallback to database directly
+          const products = await getProducts()
           setCurrentProducts(products)
         }
       } catch (error) {
         console.error('Error loading products:', error)
-        // Fallback to local data
-        const products = getProducts()
-        setCurrentProducts(products)
+        try {
+          // Fallback to database directly
+          const products = await getProducts()
+          setCurrentProducts(products)
+        } catch (dbError) {
+          console.error('Error loading products from database:', dbError)
+          setCurrentProducts([])
+        }
       }
     }
     
     // Load products only once on mount
     loadProducts()
+    
+    // Subscribe to product updates
+    const unsubscribe = subscribeToProductUpdates(() => {
+      console.log('Product update detected, reloading products...')
+      loadProducts()
+    })
+    
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   const handleLogout = () => {

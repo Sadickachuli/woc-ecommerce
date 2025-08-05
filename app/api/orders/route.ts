@@ -1,139 +1,159 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { createOrder, getAllOrders } from '../../../lib/db/operations'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
-    const order = await request.json()
-    
-    // Create email content for seller
-    const sellerEmail = process.env.SELLER_EMAIL || 'wingsofchangeghana@gmail.com'
-    
-    // Send email to seller
-    const sellerEmailResult = await resend.emails.send({
-      from: 'Wings of Change <onboarding@resend.dev>',
-      to: [sellerEmail],
-      subject: 'New Order Received - Wings of Change',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
-            🛍️ New Order Received!
-          </h1>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1f2937; margin-top: 0;">Customer Information</h2>
-            <p><strong>Name:</strong> ${order.customer.firstName} ${order.customer.lastName}</p>
-            <p><strong>Email:</strong> ${order.customer.email}</p>
-            <p><strong>Phone:</strong> ${order.customer.phone}</p>
-            <p><strong>Address:</strong> ${order.customer.address}, ${order.customer.city}, ${order.customer.state} ${order.customer.zipCode}, ${order.customer.country}</p>
-          </div>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1f2937; margin-top: 0;">Order Items</h2>
-            ${order.items.map((item: any) => `
-              <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
-                <p style="margin: 5px 0;"><strong>${item.name}</strong></p>
-                <p style="margin: 5px 0; color: #6b7280;">Quantity: ${item.quantity} | Price: $${item.price.toFixed(2)}</p>
-                <p style="margin: 5px 0; font-weight: bold;">Subtotal: $${item.total.toFixed(2)}</p>
-              </div>
-            `).join('')}
-          </div>
-          
-          <div style="background-color: #3b82f6; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <h2 style="margin: 0;">Total Order Amount</h2>
-            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">$${order.total.toFixed(2)}</p>
-            <p style="margin: 0;">Status: ${order.status}</p>
-          </div>
-          
-          <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-radius: 8px;">
-            <p style="margin: 0; color: #92400e;">
-              ⚡ Please process this order and update the customer on the delivery status.
-            </p>
-          </div>
-        </div>
-      `
-    })
-
-    // Send confirmation email to customer
-    const customerEmailResult = await resend.emails.send({
-      from: 'Wings of Change <onboarding@resend.dev>',
-      to: [order.customer.email],
-      subject: 'Order Confirmation - Wings of Change',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
-            ✅ Order Confirmed!
-          </h1>
-          
-          <p style="color: #6b7280; font-size: 16px;">
-            Hi ${order.customer.firstName}, thank you for your order! We've received your purchase and will process it shortly.
-          </p>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1f2937; margin-top: 0;">Order Summary</h2>
-            ${order.items.map((item: any) => `
-              <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
-                <p style="margin: 5px 0;"><strong>${item.name}</strong></p>
-                <p style="margin: 5px 0; color: #6b7280;">Quantity: ${item.quantity} | Price: $${item.price.toFixed(2)}</p>
-                <p style="margin: 5px 0; font-weight: bold;">Subtotal: $${item.total.toFixed(2)}</p>
-              </div>
-            `).join('')}
-          </div>
-          
-          <div style="background-color: #3b82f6; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <h2 style="margin: 0;">Total Amount</h2>
-            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">$${order.total.toFixed(2)}</p>
-          </div>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1f2937; margin-top: 0;">Shipping Address</h2>
-            <p style="margin: 5px 0;">${order.customer.firstName} ${order.customer.lastName}</p>
-            <p style="margin: 5px 0;">${order.customer.address}</p>
-            <p style="margin: 5px 0;">${order.customer.city}, ${order.customer.state} ${order.customer.zipCode}</p>
-            <p style="margin: 5px 0;">${order.customer.country}</p>
-          </div>
-          
-          <div style="margin-top: 20px; padding: 15px; background-color: #d1fae5; border-radius: 8px;">
-            <p style="margin: 0; color: #065f46;">
-              📦 We'll send you a shipping confirmation once your order is on its way!
-            </p>
-          </div>
-          
-          <div style="margin-top: 20px; text-align: center;">
-            <p style="color: #6b7280;">
-              Questions? Contact us at wingsofchangeghana@gmail.com
-            </p>
-          </div>
-        </div>
-      `
-    })
-
-    if (sellerEmailResult.error) {
-      console.error('Failed to send seller email:', sellerEmailResult.error)
-    }
-
-    if (customerEmailResult.error) {
-      console.error('Failed to send customer email:', customerEmailResult.error)
-    }
-
-    console.log('Emails sent successfully')
-    
-    // In a real application, you would also:
-    // 1. Store the order in a database
-    // 3. Process payment
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Order placed successfully and emails sent',
-      orderId: Date.now().toString()
-    })
-    
+    const orders = await getAllOrders()
+    return NextResponse.json(orders)
   } catch (error) {
-    console.error('Order processing error:', error)
+    console.error('Error fetching orders:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to process order' },
+      { error: 'Failed to fetch orders' },
       { status: 500 }
     )
   }
-} 
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { customer, items, total } = body
+
+    // Validate required fields
+    if (!customer?.name || !customer?.email || !customer?.address || !items?.length || !total) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    // Create order in database
+    const order = await createOrder({
+      customer: {
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone || '',
+        address: customer.address,
+      },
+      items: items.map((item: any) => ({
+        productId: item.id,
+        productName: item.name,
+        price: parseFloat(item.price),
+        quantity: item.quantity,
+      })),
+      total: parseFloat(total),
+    })
+
+    if (!order) {
+      return NextResponse.json(
+        { error: 'Failed to create order' },
+        { status: 500 }
+      )
+    }
+
+    // Send email notifications
+    const sellerEmail = process.env.SELLER_EMAIL || 'wingsofchangeghana@gmail.com'
+
+    try {
+      // Email to seller
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: sellerEmail,
+        subject: `New Order #${order.id} - Wings of Change`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">New Order Received!</h2>
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Order Details</h3>
+              <p><strong>Order ID:</strong> ${order.id}</p>
+              <p><strong>Total:</strong> $${parseFloat(order.total).toFixed(2)}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Customer Information</h3>
+              <p><strong>Name:</strong> ${customer.name}</p>
+              <p><strong>Email:</strong> ${customer.email}</p>
+              ${customer.phone ? `<p><strong>Phone:</strong> ${customer.phone}</p>` : ''}
+              <p><strong>Address:</strong> ${customer.address}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Items Ordered</h3>
+              ${items.map((item: any) => `
+                <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
+                  <p><strong>${item.name}</strong></p>
+                  <p>Price: $${parseFloat(item.price).toFixed(2)} × ${item.quantity} = $${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                </div>
+              `).join('')}
+            </div>
+            
+            <p>Please process this order and contact the customer if needed.</p>
+            <p>Best regards,<br>Wings of Change E-commerce System</p>
+          </div>
+        `,
+      })
+
+      // Email to customer
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: customer.email,
+        subject: `Order Confirmation #${order.id} - Wings of Change`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Thank you for your order!</h2>
+            <p>Dear ${customer.name},</p>
+            <p>We've received your order and will process it shortly. Here are your order details:</p>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Order Summary</h3>
+              <p><strong>Order ID:</strong> ${order.id}</p>
+              <p><strong>Total:</strong> $${parseFloat(order.total).toFixed(2)}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Items Ordered</h3>
+              ${items.map((item: any) => `
+                <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
+                  <p><strong>${item.name}</strong></p>
+                  <p>Price: $${parseFloat(item.price).toFixed(2)} × ${item.quantity} = $${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Shipping Address</h3>
+              <p>${customer.address}</p>
+            </div>
+            
+            <p>We'll send you updates about your order status. If you have any questions, please contact us:</p>
+            <p>📧 Email: wingsofchangeghana@gmail.com<br>
+               📞 Phone: +233 55 609 0269</p>
+            
+            <p>Thank you for supporting Wings of Change!</p>
+            <p>Best regards,<br>Wings of Change Team</p>
+          </div>
+        `,
+      })
+
+      console.log('Order emails sent successfully')
+    } catch (emailError) {
+      console.error('Failed to send order emails:', emailError)
+      // Don't fail the order creation if email fails
+    }
+
+    return NextResponse.json(order, { status: 201 })
+  } catch (error) {
+    console.error('Error creating order:', error)
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
+    )
+  }
+}
