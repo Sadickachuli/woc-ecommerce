@@ -30,43 +30,7 @@ A modern, professional ecommerce website built for Wings of Change organization 
 - **Notifications**: React Hot Toast
 - **Email**: Nodemailer
 
-## Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd wings-of-change-ecommerce
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## Admin Access
-
-### Login Credentials
-- **Email**: wingsofchangeghana@gmail.com
-- **Password**: woc0551401709
-
-### Access Admin Panel
-1. Go to `/admin` in your browser
-2. Enter the credentials above
-3. Access the full admin dashboard
 
 ## Project Structure
 
@@ -100,85 +64,7 @@ wings-of-change-ecommerce/
 └── tsconfig.json            # TypeScript configuration
 ```
 
-## Features in Detail
 
-### Ecommerce Frontend
-- **Homepage**: Hero section with compelling messaging about supporting Ghana's innovators
-- **Product Grid**: Responsive grid layout with search and filter functionality
-- **Product Cards**: Individual product display with add to cart functionality
-- **Navigation**: Mobile-responsive navigation with cart indicator
-
-### Admin Dashboard
-- **Overview Tab**: Key metrics and recent orders
-- **Products Tab**: Full CRUD operations for product management
-- **Orders Tab**: Order tracking and management
-- **Authentication**: Secure admin login system
-
-### Email Notifications
-- **Order Confirmation**: Sent to customers when orders are placed
-- **Admin Notification**: Sent to admin email for new orders
-- **Email Content**: Includes order details, customer information, and totals
-
-## Sample Data
-
-The application comes with sample products showcasing various categories:
-- **Technology**: Solar chargers and innovative gadgets
-- **Beauty**: Organic shea butter and natural products
-- **Fashion**: Recycled materials and sustainable fashion
-- **Jewelry**: Traditional bead jewelry
-- **Food**: Local honey and natural products
-- **Lifestyle**: Eco-friendly products like bamboo bottles
-
-## Development
-
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-### Adding New Features
-1. Create new components in `app/components/`
-2. Add API routes in `app/api/`
-3. Update types in `app/types/index.ts`
-4. Add data functions in `app/lib/data.ts`
-
-## Deployment
-
-### Vercel (Recommended)
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Deploy automatically
-
-### Other Platforms
-- **Netlify**: Compatible with Next.js
-- **Railway**: Easy deployment with database support
-- **DigitalOcean**: App Platform deployment
-
-## Environment Variables
-
-For production, consider setting up these environment variables:
-```env
-# Email Configuration
-EMAIL_USER=wingsofchangeghana@gmail.com
-EMAIL_PASS=your-app-specific-password
-EMAIL_FROM=wingsofchangeghana@gmail.com
-
-# Database (if migrating from in-memory)
-DATABASE_URL=your-database-url
-
-# Authentication
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=your-domain
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
 ## License
 
