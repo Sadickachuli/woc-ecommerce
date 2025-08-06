@@ -48,11 +48,11 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3" onClick={() => handleNavigation('/')}>
             <img 
-              src="/logo.png" 
-              alt="Wings of Change Logo" 
+              src="/xent-logo.png" 
+              alt="Xent Logo" 
               className="h-10 w-auto"
             />
-            <span className="text-xl font-bold text-gray-900">Wings of Change</span>
+            <span className="text-xl font-bold text-gray-900">Xent</span>
           </Link>
 
           {/* Desktop Navigation */}

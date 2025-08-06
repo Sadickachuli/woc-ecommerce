@@ -23,7 +23,7 @@ export default function Home() {
           
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Wings of Change?</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Xent?</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
@@ -81,7 +81,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Values</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              These core principles guide everything we do at Wings of Change
+              These core principles guide everything we do at Xent
             </p>
           </div>
           

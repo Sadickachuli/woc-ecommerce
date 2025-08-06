@@ -6,7 +6,7 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">About Wings of Change</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">About Xent</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We're on a mission to make sustainable living accessible to everyone through 
             carefully curated eco-friendly products that don't compromise on quality or style.
@@ -19,7 +19,7 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
               <p className="text-gray-600 mb-4">
-                At Wings of Change, we believe that every small choice can create a ripple effect 
+                At Xent, we believe that every small choice can create a ripple effect 
                 of positive change. Our mission is to provide you with sustainable alternatives 
                 that make it easy to reduce your environmental impact without sacrificing the 
                 quality and convenience you deserve.
@@ -88,7 +88,7 @@ export default function AboutPage() {
             <div className="bg-gray-100 rounded-lg p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Story</h3>
               <p className="text-gray-600 mb-4">
-                Wings of Change was born from a simple observation: sustainable products 
+                Xent was born from a simple observation: sustainable products 
                 shouldn't be hard to find or expensive to buy. What started as a small 
                 collection of eco-friendly essentials has grown into a curated marketplace 
                 for conscious consumers.

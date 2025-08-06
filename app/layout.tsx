@@ -9,8 +9,13 @@ import { Toaster } from 'react-hot-toast'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Wings of Change - Sustainable E-commerce',
+  title: 'Xent - Sustainable E-commerce',
   description: 'Discover sustainable and eco-friendly products that make a difference.',
+  icons: {
+    icon: '/xent-logo.png',
+    shortcut: '/xent-logo.png',
+    apple: '/xent-logo.png',
+  },
 }
 
 export default function RootLayout({
@@ -20,6 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/xent-logo.png" type="image/png" />
+      </head>
       <body className={inter.className}>
         <CartProvider>
           <Header />

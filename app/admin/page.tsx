@@ -43,7 +43,7 @@ export default function AdminLogin() {
           Admin Login
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Wings of Change Administration
+          Xent Administration
         </p>
       </div>
 

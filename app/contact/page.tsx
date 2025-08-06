@@ -208,7 +208,7 @@ export default function ContactPage() {
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
                       P.O.Box<br />
-                      Wings Of Change Ghana<br />
+                      Xent Ghana<br />
                       Donaso- Ejisu<br />
                       Kumasi Ghana
                     </p>

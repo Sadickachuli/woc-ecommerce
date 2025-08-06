@@ -9,9 +9,9 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">WC</span>
+                <span className="text-white font-bold text-sm">X</span>
               </div>
-              <span className="text-xl font-bold">Wings of Change</span>
+              <span className="text-xl font-bold">Xent</span>
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
               Making sustainable living accessible to everyone through carefully curated 
@@ -83,7 +83,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © 2024 Wings of Change. All rights reserved.
+            © 2024 Xent. All rights reserved.
           </p>
         </div>
       </div>
