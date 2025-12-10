@@ -62,7 +62,7 @@ export default function CartPage() {
                 
                 <div className="space-y-4">
                   {state.items.map((item) => (
-                    <div key={item.product.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                    <div key={item.product.id!} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
                       {/* Product Image */}
                       <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
                         {item.product.image ? (
@@ -90,14 +90,14 @@ export default function CartPage() {
                       {/* Quantity Controls */}
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.product.id!, item.quantity - 1)}
                           className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="w-12 text-center font-medium">{item.quantity}</span>
                         <button
-                          onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.product.id!, item.quantity + 1)}
                           className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
                         >
                           <Plus className="w-4 h-4" />
@@ -106,7 +106,7 @@ export default function CartPage() {
 
                       {/* Remove Button */}
                       <button
-                        onClick={() => removeItem(item.product.id)}
+                        onClick={() => removeItem(item.product.id!)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <Trash2 className="w-5 h-5" />

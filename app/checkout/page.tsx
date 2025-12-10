@@ -53,7 +53,7 @@ export default function CheckoutPage() {
       // Create order object
       const order = {
         items: state.items.map(item => ({
-          productId: item.product.id,
+          productId: item.product.id!,
           name: item.product.name,
           price: item.product.price,
           quantity: item.quantity,
@@ -144,7 +144,7 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
               <div className="space-y-2">
                 {state.items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between">
+                  <div key={item.product.id!} className="flex justify-between">
                     <span>{item.product.name} x {item.quantity}</span>
                     <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                   </div>
@@ -368,7 +368,7 @@ export default function CheckoutPage() {
               
               <div className="space-y-4 mb-6">
                 {state.items.map((item) => (
-                  <div key={item.product.id} className="flex items-center space-x-3">
+                  <div key={item.product.id!} className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                       {item.product.image ? (
                         <img

@@ -30,12 +30,12 @@ const CartContext = createContext<{
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const existingItem = state.items.find(item => item.product.id === action.payload.id)
+      const existingItem = state.items.find(item => item.product.id === action.payload.id!)
       
       if (existingItem) {
         // Update quantity if item already exists
         const updatedItems = state.items.map(item =>
-          item.product.id === action.payload.id
+          item.product.id === action.payload.id!
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -56,7 +56,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
     
     case 'REMOVE_ITEM': {
-      const updatedItems = state.items.filter(item => item.product.id !== action.payload)
+      const updatedItems = state.items.filter(item => item.product.id! !== action.payload)
       return {
         ...state,
         items: updatedItems,
@@ -66,7 +66,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     
     case 'UPDATE_QUANTITY': {
       const updatedItems = state.items.map(item =>
-        item.product.id === action.payload.productId
+        item.product.id! === action.payload.productId
           ? { ...item, quantity: action.payload.quantity }
           : item
       ).filter(item => item.quantity > 0) // Remove items with quantity 0
