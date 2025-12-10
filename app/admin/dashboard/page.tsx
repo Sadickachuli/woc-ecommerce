@@ -85,7 +85,7 @@ export default function AdminDashboard() {
             const store = await getStoreByOwner(currentUser.uid)
             setUserStore(store)
           }
-        } else {
+      } else {
           // Default to user role if not found
           setUserRole('user')
         }
@@ -157,8 +157,8 @@ export default function AdminDashboard() {
   const handleAddProduct = async () => {
     if (!userStore || !user) {
       toast.error('Store information not found')
-      return
-    }
+        return
+      }
 
     if (!productForm.name || !productForm.description || !productForm.price || !productForm.category || !productForm.stock) {
       toast.error('Please fill in all required fields')
@@ -168,18 +168,18 @@ export default function AdminDashboard() {
     try {
       const newProduct = await createProduct({
         storeId: userStore.id!,
-        name: productForm.name,
-        description: productForm.description,
-        price: parseFloat(productForm.price),
-        category: productForm.category,
-        stock: parseInt(productForm.stock),
+      name: productForm.name,
+      description: productForm.description,
+      price: parseFloat(productForm.price),
+      category: productForm.category,
+      stock: parseInt(productForm.stock),
         image: productForm.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop'
       })
 
       setProducts([newProduct, ...products])
-      resetProductForm()
-      setShowAddProduct(false)
-      toast.success('Product added successfully!')
+    resetProductForm()
+    setShowAddProduct(false)
+    toast.success('Product added successfully!')
     } catch (error) {
       console.error('Error adding product:', error)
       toast.error('Failed to add product')
@@ -208,11 +208,11 @@ export default function AdminDashboard() {
 
     try {
       await updateProduct(editingProduct.id!, {
-        name: productForm.name,
-        description: productForm.description,
-        price: parseFloat(productForm.price),
-        category: productForm.category,
-        stock: parseInt(productForm.stock),
+      name: productForm.name,
+      description: productForm.description,
+      price: parseFloat(productForm.price),
+      category: productForm.category,
+      stock: parseInt(productForm.stock),
         image: productForm.image
       })
 
@@ -222,9 +222,9 @@ export default function AdminDashboard() {
           : p
       ))
 
-      setEditingProduct(null)
-      resetProductForm()
-      toast.success('Product updated successfully!')
+    setEditingProduct(null)
+    resetProductForm()
+    toast.success('Product updated successfully!')
     } catch (error) {
       console.error('Error updating product:', error)
       toast.error('Failed to update product')
@@ -238,9 +238,9 @@ export default function AdminDashboard() {
       await deleteProduct(productId)
       setProducts(products.filter(p => p.id !== productId))
       toast.success('Product deleted successfully!')
-    } catch (error) {
-      console.error('Error deleting product:', error)
-      toast.error('Failed to delete product')
+      } catch (error) {
+        console.error('Error deleting product:', error)
+        toast.error('Failed to delete product')
     }
   }
 
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ storeId: store.id })
       })
-
+      
       if (response.ok) {
         setPendingStores(pendingStores.filter(s => s.id !== store.id))
         setSelectedStore(null)
@@ -393,13 +393,13 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">{user.email}</span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Logout</span>
-              </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ export default function AdminDashboard() {
               { id: 'overview', label: 'Overview', icon: Eye },
               { id: 'products', label: 'Products', icon: Package },
               ...(userRole === 'admin' ? [
-                { id: 'orders', label: 'Orders', icon: ShoppingCart },
+              { id: 'orders', label: 'Orders', icon: ShoppingCart },
                 { id: 'sellers', label: 'Pending Sellers', icon: Users }
               ] : [])
             ].map((tab) => (
@@ -447,29 +447,29 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               {userRole === 'admin' && (
                 <>
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <div className="flex items-center">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
                       <div className="p-2 bg-blue-100 rounded-lg">
                         <DollarSign className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">${totalRevenue.toFixed(2)}</p>
-                      </div>
-                    </div>
                   </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900">${totalRevenue.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
 
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <ShoppingCart className="w-6 h-6 text-green-600" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                        <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
-                      </div>
-                    </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <ShoppingCart className="w-6 h-6 text-green-600" />
                   </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                    <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                  </div>
+                </div>
+              </div>
                 </>
               )}
 
@@ -488,17 +488,17 @@ export default function AdminDashboard() {
               </div>
 
               {userRole === 'admin' && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <Users className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div className="ml-4">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Users className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending Applications</p>
                       <p className="text-2xl font-bold text-gray-900">{pendingStores.length}</p>
-                    </div>
                   </div>
                 </div>
+              </div>
               )}
             </div>
 
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
                     <Palette className="w-4 h-4" />
                     <span>Customize Store</span>
                   </Link>
-                </div>
+              </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Store Name</p>
@@ -528,15 +528,15 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-600">Status</p>
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                       {userStore.status}
-                    </span>
+                          </span>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Branding</p>
                     <p className="text-sm text-gray-500">
                       {userStore.branding?.logo || userStore.branding?.banner ? 'Customized' : 'Using defaults'}
                     </p>
-                  </div>
-                </div>
+              </div>
+            </div>
               </div>
             )}
           </div>
@@ -576,9 +576,9 @@ export default function AdminDashboard() {
                         Stock
                       </th>
                       {userRole === 'seller' && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                       )}
                     </tr>
                   </thead>
@@ -608,22 +608,22 @@ export default function AdminDashboard() {
                           {product.stock}
                         </td>
                         {userRole === 'seller' && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button 
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button 
                                 className="text-blue-600 hover:text-blue-900"
-                                onClick={() => handleEditProduct(product)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button 
-                                className="text-red-600 hover:text-red-900"
+                              onClick={() => handleEditProduct(product)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button 
+                              className="text-red-600 hover:text-red-900"
                                 onClick={() => handleDeleteProduct(product.id!)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
                         )}
                       </tr>
                     ))}
@@ -822,13 +822,13 @@ export default function AdminDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                  <input
-                    type="text"
-                    value={productForm.image}
-                    onChange={(e) => setProductForm({...productForm, image: e.target.value})}
+                    <input
+                      type="text"
+                      value={productForm.image}
+                      onChange={(e) => setProductForm({...productForm, image: e.target.value})}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
+                      placeholder="https://example.com/image.jpg"
+                    />
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4">
@@ -911,4 +911,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   )
-}
+} 

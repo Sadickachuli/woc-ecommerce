@@ -43,7 +43,7 @@ export default function AdminLogin() {
         
         // Redirect based on role
         if (userData.role === 'admin' || userData.role === 'seller') {
-          router.push('/admin/dashboard')
+      router.push('/admin/dashboard')
         }
       }
       
@@ -187,7 +187,7 @@ export default function AdminLogin() {
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
-              </div>
+                </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">New seller?</span>
               </div>

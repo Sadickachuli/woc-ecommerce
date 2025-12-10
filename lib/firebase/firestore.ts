@@ -31,6 +31,7 @@ export interface Store {
   storeName: string
   status: 'pending' | 'verified' | 'rejected'
   contactEmail: string
+  currency?: string // Store's preferred currency (USD, EUR, GBP, NGN, etc.)
   applicationDetails: {
     productInfo: string
     socialMediaLinks: string
@@ -201,10 +202,10 @@ export const updateStoreStatus = async (storeId: string, status: Store['status']
   }
 }
 
-export const updateStoreBranding = async (storeId: string, branding: Store['branding']) => {
+export const updateStoreBranding = async (storeId: string, updates: Partial<Store>) => {
   try {
     const storeRef = doc(db, 'stores', storeId)
-    await updateDoc(storeRef, { branding })
+    await updateDoc(storeRef, updates as any)
   } catch (error) {
     console.error('Error updating store branding:', error)
     throw error

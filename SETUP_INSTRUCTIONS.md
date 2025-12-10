@@ -190,3 +190,4 @@ Check these files:
 
 **Remember:** The app MUST have Firebase configured to work. The old PostgreSQL database has been completely removed.
 
+

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Store, Palette, Image as ImageIcon, Save, Eye } from 'lucide-react'
+import { Store, Palette, Image as ImageIcon, Save, Eye, DollarSign } from 'lucide-react'
 import { getCurrentUser, onAuthChange } from '@/lib/firebase/auth'
 import { getUser, getStoreByOwner, updateStoreBranding } from '@/lib/firebase/firestore'
 import { Store as StoreType } from '@/lib/firebase/firestore'
 import { User as FirebaseUser } from 'firebase/auth'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/currencies'
 
 export default function StoreSettingsPage() {
   const router = useRouter()
@@ -24,7 +25,8 @@ export default function StoreSettingsPage() {
     primaryColor: '#3b82f6',
     accentColor: '#8b5cf6',
     description: '',
-    tagline: ''
+    tagline: '',
+    currency: DEFAULT_CURRENCY
   })
 
   useEffect(() => {
@@ -49,8 +51,15 @@ export default function StoreSettingsPage() {
                 primaryColor: sellerStore.branding.primaryColor || '#3b82f6',
                 accentColor: sellerStore.branding.accentColor || '#8b5cf6',
                 description: sellerStore.branding.description || '',
-                tagline: sellerStore.branding.tagline || ''
+                tagline: sellerStore.branding.tagline || '',
+                currency: sellerStore.currency || DEFAULT_CURRENCY
               })
+            } else if (sellerStore) {
+              // Load currency even if no branding yet
+              setBranding(prev => ({
+                ...prev,
+                currency: sellerStore.currency || DEFAULT_CURRENCY
+              }))
             }
           }
         }
@@ -71,11 +80,18 @@ export default function StoreSettingsPage() {
     setSaving(true)
 
     try {
-      await updateStoreBranding(store.id!, branding)
-      toast.success('Store branding updated successfully!')
+      // Separate currency from branding
+      const { currency, ...brandingData } = branding
+      
+      // Save both branding and currency at store level
+      await updateStoreBranding(store.id!, {
+        branding: brandingData,
+        currency: currency
+      })
+      toast.success('Store settings updated successfully!')
     } catch (error) {
-      console.error('Error updating branding:', error)
-      toast.error('Failed to update branding')
+      console.error('Error updating store settings:', error)
+      toast.error('Failed to update settings')
     } finally {
       setSaving(false)
     }
@@ -141,6 +157,34 @@ export default function StoreSettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Store Currency */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <DollarSign className="w-5 h-5 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Store Currency</h2>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select your store's currency
+              </label>
+              <select
+                value={branding.currency}
+                onChange={(e) => setBranding({ ...branding, currency: e.target.value })}
+                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {CURRENCIES.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.symbol} {currency.code} - {currency.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-sm text-gray-500">
+                All product prices in your store will be displayed in this currency.
+              </p>
+            </div>
+          </div>
+
           {/* Store Images */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center space-x-2 mb-4">

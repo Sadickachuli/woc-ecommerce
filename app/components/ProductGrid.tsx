@@ -1,16 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { Product } from '../types'
+import { Product, Store } from '../types'
 import ProductCard from './ProductCard'
 import { Timestamp } from 'firebase/firestore'
 
 interface ProductGridProps {
   products: Product[]
+  stores?: Store[]
 }
 
-export default function ProductGrid({ products }: ProductGridProps) {
+export default function ProductGrid({ products, stores = [] }: ProductGridProps) {
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'newest'>('newest')
+
+  // Create a store lookup map for easy currency access
+  const storeMap = new Map(stores.map(store => [store.id!, store]))
 
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
@@ -56,9 +60,16 @@ export default function ProductGrid({ products }: ProductGridProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {sortedProducts.map((product) => {
+            const store = storeMap.get(product.storeId)
+            return (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                currency={store?.currency} 
+              />
+            )
+          })}
         </div>
       )}
     </div>

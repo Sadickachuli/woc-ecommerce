@@ -181,7 +181,7 @@ export default function StorePage() {
         </div>
 
         {products.length > 0 ? (
-          <ProductGrid products={products} />
+          <ProductGrid products={products} stores={store ? [store] : []} />
         ) : (
           <div className="text-center py-12 bg-white rounded-lg">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />

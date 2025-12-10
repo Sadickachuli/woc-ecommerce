@@ -231,7 +231,7 @@ export default function ProductsPage() {
             <p className="text-gray-600">Please wait while we fetch the latest products.</p>
           </div>
         ) : filteredProducts.length > 0 ? (
-          <ProductGrid products={filteredProducts} />
+          <ProductGrid products={filteredProducts} stores={stores} />
         ) : (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">

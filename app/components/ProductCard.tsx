@@ -5,12 +5,14 @@ import { Product } from '../types'
 import { ShoppingCart, Eye, Image as ImageIcon, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCart } from '../contexts/CartContext'
+import { formatPrice } from '@/lib/currencies'
 
 interface ProductCardProps {
   product: Product
+  currency?: string
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, currency }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -70,7 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl font-bold text-primary-600">
-            ${product.price.toFixed(2)}
+            {formatPrice(product.price, currency)}
           </span>
           <span className="text-sm text-gray-500">
             {product.stock} in stock
@@ -142,7 +144,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-3xl font-bold text-primary-600">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price, currency)}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       product.stock > 0 
