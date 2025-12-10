@@ -405,3 +405,100 @@ export const updateOrderStatus = async (orderId: string, status: Order['status']
   }
 }
 
+// Admin management functions
+export const getAllUsers = async (): Promise<User[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'users'))
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as User))
+  } catch (error) {
+    console.error('Error getting all users:', error)
+    return []
+  }
+}
+
+export const deleteUser = async (userId: string) => {
+  try {
+    console.log(`🗑️ Deleting user with ID: ${userId}`)
+    
+    // First, check if user is a seller and has a store
+    console.log(`🔍 Searching for stores with ownerUid: ${userId}`)
+    const userStore = await getStoreByOwner(userId)
+    
+    if (userStore) {
+      console.log(`✅ Found store: ${userStore.storeName} (ID: ${userStore.id})`)
+      console.log(`📦 Store ownerUid: ${userStore.ownerUid}`)
+      
+      // Delete the store (which will also delete all products)
+      console.log(`🗑️ Deleting store ${userStore.storeName}...`)
+      await deleteStore(userStore.id!)
+      console.log(`✅ Deleted store ${userStore.storeName} and all its products`)
+    } else {
+      console.log(`ℹ️ No store found for user ${userId}`)
+    }
+    
+    // Then delete the user
+    console.log(`🗑️ Deleting user document...`)
+    await deleteDoc(doc(db, 'users', userId))
+    console.log(`✅ User deleted successfully`)
+  } catch (error) {
+    console.error('❌ Error deleting user:', error)
+    throw error
+  }
+}
+
+export const getAllStores = async (): Promise<Store[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'stores'))
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Store))
+  } catch (error) {
+    console.error('Error getting all stores:', error)
+    return []
+  }
+}
+
+export const deleteStore = async (storeId: string) => {
+  try {
+    // Delete all products from this store first
+    const productsQuery = query(collection(db, 'products'), where('storeId', '==', storeId))
+    const productsSnapshot = await getDocs(productsQuery)
+    
+    const deletePromises = productsSnapshot.docs.map(doc => deleteDoc(doc.ref))
+    await Promise.all(deletePromises)
+    
+    // Then delete the store
+    await deleteDoc(doc(db, 'stores', storeId))
+  } catch (error) {
+    console.error('Error deleting store:', error)
+    throw error
+  }
+}
+
+// Clean up orphaned stores (stores whose owners don't exist)
+export const cleanupOrphanedStores = async () => {
+  try {
+    const allStores = await getAllStores()
+    const allUsers = await getAllUsers()
+    
+    const userIds = new Set(allUsers.map(u => u.id))
+    const orphanedStores = allStores.filter(store => !userIds.has(store.ownerUid))
+    
+    console.log(`Found ${orphanedStores.length} orphaned stores`)
+    
+    for (const store of orphanedStores) {
+      console.log(`Deleting orphaned store: ${store.storeName} (owner: ${store.ownerUid})`)
+      await deleteStore(store.id!)
+    }
+    
+    return orphanedStores.length
+  } catch (error) {
+    console.error('Error cleaning up orphaned stores:', error)
+    throw error
+  }
+}
+

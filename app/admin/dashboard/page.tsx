@@ -18,7 +18,8 @@ import {
   Upload,
   CheckCircle,
   Clock,
-  Palette
+  Palette,
+  UserCog
 } from 'lucide-react'
 import { getCurrentUser, onAuthChange, signInWithGoogle, signOut } from '@/lib/firebase/auth'
 import { 
@@ -393,6 +394,15 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">{user.email}</span>
+              {userRole === 'admin' && (
+                <Link
+                  href="/admin/manage"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <UserCog className="w-5 h-5" />
+                  <span>Manage Platform</span>
+                </Link>
+              )}
             <button
               onClick={handleLogout}
               className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors"
