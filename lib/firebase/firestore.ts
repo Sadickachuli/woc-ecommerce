@@ -18,6 +18,7 @@ import { db } from './config'
 
 // Type definitions
 export interface User {
+  id?: string // Firestore document ID (same as uid)
   uid: string
   email: string
   displayName: string
