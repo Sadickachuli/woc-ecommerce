@@ -3,13 +3,24 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ShoppingCart, User } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, LogIn, UserPlus } from 'lucide-react'
 import { useCart } from '../contexts/CartContext'
+import { onAuthChange, signOut } from '@/lib/firebase/auth'
+import { User as FirebaseUser } from 'firebase/auth'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<FirebaseUser | null>(null)
   const pathname = usePathname()
   const { state } = useCart()
+
+  // Listen to auth state
+  useEffect(() => {
+    const unsubscribe = onAuthChange((currentUser) => {
+      setUser(currentUser)
+    })
+    return () => unsubscribe()
+  }, [])
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -52,7 +63,7 @@ export default function Header() {
               alt="Xent Logo" 
               className="h-10 w-auto"
             />
-            <span className="text-xl font-bold text-gray-900">Xent</span>
+            <span className="text-xl font-bold text-gray-900"></span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -105,19 +116,6 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Admin Icon */}
-            <Link
-              href="/admin"
-              className={`transition-colors ${
-                pathname.startsWith('/admin')
-                  ? 'text-primary-600'
-                  : 'text-gray-700 hover:text-primary-600'
-              }`}
-              onClick={() => handleNavigation('/admin')}
-            >
-              <User className="w-5 h-5" />
-            </Link>
-            
             {/* Cart Icon */}
             <Link href="/cart" className="relative">
               <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-primary-600 transition-colors" />
@@ -127,6 +125,50 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            {/* Auth Buttons */}
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-600 hidden lg:inline">
+                  {user.displayName || user.email}
+                </span>
+                <Link
+                  href="/admin/dashboard"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium">Dashboard</span>
+                </Link>
+                <button
+                  onClick={async () => {
+                    await signOut()
+                    window.location.href = '/'
+                  }}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/admin"
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  title="For existing Admins & Sellers"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </Link>
+                <Link
+                  href="/become-seller"
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+                  title="Apply for a new store"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Sell on Platform</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Actions */}
@@ -207,17 +249,6 @@ export default function Header() {
                 Contact
               </Link>
               <Link
-                href="/admin"
-                className={`px-3 py-2 rounded-md text-base font-medium ${
-                  pathname.startsWith('/admin')
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
-                onClick={() => handleNavigation('/admin')}
-              >
-                Admin
-              </Link>
-              <Link
                 href="/cart"
                 className={`px-3 py-2 rounded-md text-base font-medium ${
                   pathname === '/cart'
@@ -228,6 +259,50 @@ export default function Header() {
               >
                 Cart ({state.items.length})
               </Link>
+
+              {/* Mobile Auth Section */}
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                {user ? (
+                  <>
+                    <Link
+                      href="/admin"
+                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 flex items-center space-x-2"
+                      onClick={() => handleNavigation('/admin')}
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Dashboard</span>
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        await signOut()
+                        window.location.href = '/'
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/admin"
+                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 flex items-center space-x-2"
+                      onClick={() => handleNavigation('/admin')}
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Sign In</span>
+                    </Link>
+                    <Link
+                      href="/become-seller"
+                      className="px-3 py-2 rounded-md text-base font-medium text-white bg-primary-600 hover:bg-primary-700 flex items-center space-x-2 mt-2"
+                      onClick={() => handleNavigation('/become-seller')}
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Become a Seller</span>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </nav>
         )}

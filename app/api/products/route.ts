@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllProducts, createProduct, updateProduct, deleteProduct, initializeDatabase } from '../../../lib/db/operations'
+import { 
+  getAllProducts, 
+  getProductsFromVerifiedStores,
+  createProduct as createProductFirestore, 
+  updateProduct as updateProductFirestore, 
+  deleteProduct as deleteProductFirestore 
+} from '@/lib/firebase/firestore'
 
 export async function GET() {
   try {
-    const products = await getAllProducts()
+    // Only return products from verified stores for public view
+    const products = await getProductsFromVerifiedStores()
     return NextResponse.json(products)
   } catch (error) {
     console.error('Error fetching products:', error)
@@ -20,30 +27,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('Request body:', body)
     
-    const { name, description, price, image, category, stock } = body
+    const { storeId, name, description, price, image, category, stock } = body
 
     // Validate required fields
-    if (!name || !description || !price || !image || !category || stock === undefined) {
-      console.log('Missing required fields:', { name, description, price, image, category, stock })
+    if (!storeId || !name || !description || !price || !image || !category || stock === undefined) {
+      console.log('Missing required fields:', { storeId, name, description, price, image, category, stock })
       return NextResponse.json(
-        { error: 'Missing required fields', details: { name, description, price, image, category, stock } },
+        { error: 'Missing required fields', details: { storeId, name, description, price, image, category, stock } },
         { status: 400 }
       )
     }
 
     console.log('Creating product with data:', {
+      storeId,
       name,
       description,
-      price: price.toString(),
+      price: parseFloat(price),
       image,
       category,
       stock: parseInt(stock),
     })
 
-    const product = await createProduct({
+    const product = await createProductFirestore({
+      storeId,
       name,
       description,
-      price: price.toString(),
+      price: parseFloat(price),
       image,
       category,
       stock: parseInt(stock),
@@ -85,21 +94,14 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {}
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description
-    if (price !== undefined) updateData.price = price.toString()
+    if (price !== undefined) updateData.price = parseFloat(price)
     if (image !== undefined) updateData.image = image
     if (category !== undefined) updateData.category = category
     if (stock !== undefined) updateData.stock = parseInt(stock)
 
-    const product = await updateProduct(id, updateData)
+    await updateProductFirestore(id, updateData)
 
-    if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found or failed to update' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(product)
+    return NextResponse.json({ id, ...updateData })
   } catch (error) {
     console.error('Error updating product:', error)
     return NextResponse.json(
@@ -121,14 +123,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const success = await deleteProduct(id)
-
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Product not found or failed to delete' },
-        { status: 404 }
-      )
-    }
+    await deleteProductFirestore(id)
 
     return NextResponse.json({ message: 'Product deleted successfully' })
   } catch (error) {

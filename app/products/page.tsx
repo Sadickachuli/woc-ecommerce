@@ -2,22 +2,39 @@
 
 import { useState, useEffect } from 'react'
 import ProductGrid from '../components/ProductGrid'
-import { Search, Filter } from 'lucide-react'
+import { Search, Store } from 'lucide-react'
 import { Product } from '../types'
 import { getProducts, subscribeToProductUpdates } from '../lib/data'
+import { Store as StoreType } from '@/lib/firebase/firestore'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '@/lib/firebase/config'
+import Link from 'next/link'
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedStore, setSelectedStore] = useState('all')
   const [currentProducts, setCurrentProducts] = useState<Product[]>([])
+  const [stores, setStores] = useState<StoreType[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load products from data store and subscribe to updates
+  // Load stores and products
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       setIsLoading(true)
       try {
-        // First try to get products from API
+        // Load verified stores
+        const storesQuery = query(
+          collection(db, 'stores'),
+          where('status', '==', 'verified')
+        )
+        const storesSnapshot = await getDocs(storesQuery)
+        const verifiedStores = storesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as StoreType))
+        setStores(verifiedStores)
+
+        // Load products from API
         const response = await fetch('/api/products')
         if (response.ok) {
           const products = await response.json()
@@ -28,9 +45,9 @@ export default function ProductsPage() {
           setCurrentProducts(products)
         }
       } catch (error) {
-        console.error('Error loading products:', error)
-        // Fallback to local data store
+        console.error('Error loading data:', error)
         try {
+          // Fallback to local data store
           const products = await getProducts()
           setCurrentProducts(products)
         } catch (dbError) {
@@ -42,20 +59,20 @@ export default function ProductsPage() {
       }
     }
     
-    // Load products initially
-    loadProducts()
+    // Load data initially
+    loadData()
     
     // Subscribe to product updates for real-time sync
     const unsubscribe = subscribeToProductUpdates(() => {
       console.log('Product update detected, reloading products...')
-      loadProducts()
+      loadData()
     })
 
     // Listen for localStorage changes (for cross-tab sync) - only in browser
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'ecommerce_products') {
         console.log('localStorage change detected, reloading products...')
-        loadProducts()
+        loadData()
       }
     }
 
@@ -73,28 +90,11 @@ export default function ProductsPage() {
     }
   }, [])
 
-
-
-  const categories = [
-    { id: 'all', name: 'All Products' },
-    { id: 'clothing', name: 'Clothing' },
-    { id: 'accessories', name: 'Accessories' },
-    { id: 'stationery', name: 'Stationery' },
-    { id: 'electronics', name: 'Electronics' },
-    { id: 'home', name: 'Home & Garden' },
-    { id: 'beauty', name: 'Beauty' },
-    { id: 'food', name: 'Food' },
-    { id: 'lifestyle', name: 'Lifestyle' },
-    { id: 'Technology', name: 'Technology' },
-    { id: 'Fashion', name: 'Fashion' },
-    { id: 'Jewelry', name: 'Jewelry' }
-  ]
-
   const filteredProducts = currentProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesStore = selectedStore === 'all' || product.storeId === selectedStore
+    return matchesSearch && matchesStore
   })
 
   return (
@@ -102,16 +102,12 @@ export default function ProductsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Our Products</h1>
-          <p className="text-gray-600">Discover sustainable and eco-friendly products that make a difference.</p>
-
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Stores & Products</h1>
+          <p className="text-gray-600">Shop from verified sellers in our marketplace.</p>
         </div>
 
-
-
-        {/* Search and Filter */}
-        <div className="mb-8 space-y-4">
-          {/* Search Bar */}
+        {/* Search Bar */}
+        <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -119,26 +115,94 @@ export default function ProductsPage() {
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
+        </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedCategory === category.id
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
+        {/* Stores Section */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Store className="w-5 h-5 mr-2" />
+            Shop by Store
+          </h2>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {/* All Stores */}
+            <button
+              onClick={() => setSelectedStore('all')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                selectedStore === 'all'
+                  ? 'border-primary-600 bg-primary-50 text-primary-700'
+                  : 'border-gray-200 bg-white hover:border-primary-300'
+              }`}
+            >
+              <div className="text-center">
+                <Store className="w-6 h-6 mx-auto mb-1" />
+                <p className="text-sm font-medium">All Stores</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {currentProducts.length} products
+                </p>
+              </div>
+            </button>
+
+            {/* Individual Stores */}
+            {stores.map((store) => {
+              const storeProductCount = currentProducts.filter(p => p.storeId === store.id).length
+              const primaryColor = store.branding?.primaryColor || '#3b82f6'
+              
+              return (
+                <button
+                  key={store.id}
+                  onClick={() => setSelectedStore(store.id!)}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    selectedStore === store.id
+                      ? 'bg-blue-50'
+                      : 'border-gray-200 bg-white hover:border-blue-300'
+                  }`}
+                  style={selectedStore === store.id ? { borderColor: primaryColor } : {}}
+                >
+                  <div className="text-center">
+                    {store.branding?.logo ? (
+                      <img
+                        src={store.branding.logo}
+                        alt={store.storeName}
+                        className="w-12 h-12 rounded-full mx-auto mb-2 object-contain border"
+                        style={{ borderColor: primaryColor }}
+                      />
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold text-lg"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        {store.storeName.charAt(0)}
+                      </div>
+                    )}
+                    <p className="text-sm font-medium truncate">{store.storeName}</p>
+                    {store.branding?.tagline && (
+                      <p className="text-xs text-gray-500 truncate">{store.branding.tagline}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {storeProductCount} {storeProductCount === 1 ? 'product' : 'products'}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
           </div>
+
+          {/* View Store Page Link */}
+          {selectedStore !== 'all' && (
+            <div className="mt-4">
+              <Link
+                href={`/store/${selectedStore}`}
+                className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                <Store className="w-4 h-4 mr-1" />
+                View full store page →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Results Count */}
@@ -147,7 +211,14 @@ export default function ProductsPage() {
             {isLoading ? (
               "Loading products..."
             ) : (
-              `Showing ${filteredProducts.length} of ${currentProducts.length} products`
+              <>
+                Showing {filteredProducts.length} of {currentProducts.length} products
+                {selectedStore !== 'all' && stores.find(s => s.id === selectedStore) && (
+                  <span className="ml-2 text-primary-600 font-medium">
+                    from {stores.find(s => s.id === selectedStore)?.storeName}
+                  </span>
+                )}
+              </>
             )}
           </p>
         </div>
@@ -167,10 +238,24 @@ export default function ProductsPage() {
               <Search className="w-12 h-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+            <p className="text-gray-600 mb-4">
+              {searchTerm
+                ? 'Try adjusting your search.'
+                : selectedStore !== 'all'
+                ? 'This store hasn\'t added products yet.'
+                : 'No stores have added products yet.'}
+            </p>
+            {selectedStore !== 'all' && (
+              <button
+                onClick={() => setSelectedStore('all')}
+                className="text-primary-600 hover:text-primary-700 font-medium"
+              >
+                View all stores
+              </button>
+            )}
           </div>
         )}
       </div>
     </div>
   )
-} 
+}
