@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  Clock
 } from 'lucide-react'
 import { onAuthChange } from '@/lib/firebase/auth'
 import { 
