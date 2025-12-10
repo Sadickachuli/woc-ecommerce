@@ -4,7 +4,8 @@ import {
   createOrder as createOrderFirestore, 
   getAllOrders,
   getStore,
-  getProduct
+  getProduct,
+  getUser
 } from '@/lib/firebase/firestore'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -85,13 +86,29 @@ export async function POST(request: NextRequest) {
     // Get unique store IDs and send notifications to each store owner
     const storeIds = [...new Set(itemsWithStoreId.map(item => item.storeId))]
     
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ RESEND_API_KEY not configured - emails will not be sent')
+    }
+
     try {
       // Send emails to each store owner
+      console.log(`📬 Preparing to send emails to ${storeIds.length} store(s)`)
+      
       for (const storeId of storeIds) {
         if (storeId === 'unknown') continue
 
         const store = await getStore(storeId)
-        if (!store) continue
+        if (!store) {
+          console.log(`⚠️ Store not found for storeId: ${storeId}`)
+          continue
+        }
+
+        // Get the actual user's email (from their Google account)
+        const storeOwner = await getUser(store.ownerUid)
+        const sellerEmail = storeOwner?.email || store.contactEmail
+
+        console.log(`📧 Sending email to seller: ${sellerEmail} for store: ${store.storeName}`)
 
         const storeItems = itemsWithStoreId.filter(item => item.storeId === storeId)
         const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -99,7 +116,7 @@ export async function POST(request: NextRequest) {
         // Email to store owner
         await resend.emails.send({
           from: 'onboarding@resend.dev',
-          to: store.contactEmail,
+          to: sellerEmail,
           subject: `New Order #${order.id} - ${store.storeName}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -138,6 +155,8 @@ export async function POST(request: NextRequest) {
 
       // Send email to main admin
       const adminEmail = process.env.ADMIN_EMAIL || 'wingsofchangeghana@gmail.com'
+      console.log(`📧 Sending admin notification to: ${adminEmail}`)
+      
       await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: adminEmail,
@@ -178,6 +197,8 @@ export async function POST(request: NextRequest) {
       })
 
       // Email to customer
+      console.log(`📧 Sending order confirmation to customer: ${customer.email}`)
+      
       await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: customer.email,
@@ -218,9 +239,12 @@ export async function POST(request: NextRequest) {
         `,
       })
 
-      console.log('Order emails sent successfully')
+      console.log('✅ All order emails sent successfully!')
     } catch (emailError) {
-      console.error('Failed to send order emails:', emailError)
+      console.error('❌ Failed to send order emails:', emailError)
+      if (emailError instanceof Error) {
+        console.error('Email error message:', emailError.message)
+      }
       // Don't fail the order creation if email fails
     }
 
