@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Product } from '../types'
 import ProductCard from './ProductCard'
+import { Timestamp } from 'firebase/firestore'
 
 interface ProductGridProps {
   products: Product[]
@@ -18,7 +19,9 @@ export default function ProductGrid({ products }: ProductGridProps) {
       case 'price':
         return a.price - b.price
       case 'newest':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        const timeB = a.createdAt instanceof Timestamp ? a.createdAt.toDate().getTime() : 0
+        const timeA = b.createdAt instanceof Timestamp ? b.createdAt.toDate().getTime() : 0
+        return timeA - timeB
       default:
         return 0
     }
