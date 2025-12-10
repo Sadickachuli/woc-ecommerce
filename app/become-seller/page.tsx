@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentUser, onAuthChange, signInWithGoogle } from '@/lib/firebase/auth'
-import { createStore, getStoreByOwner } from '@/lib/firebase/firestore'
-import { Store, User as FirebaseUser } from 'firebase/auth'
+import { createStore, getStoreByOwner, Store } from '@/lib/firebase/firestore'
+import { User as FirebaseUser } from 'firebase/auth'
 import toast from 'react-hot-toast'
 
 export default function BecomeSellerPage() {
