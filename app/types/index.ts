@@ -1,43 +1,9 @@
-export interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  stock: number
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Product } from '@/lib/firebase/firestore'
 
-export interface Order {
-  id: string
-  customerName: string
-  customerEmail: string
-  customerPhone: string
-  customerAddress: string
-  items: OrderItem[]
-  total: number
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
-  createdAt: Date
-  updatedAt: Date
-}
+// Re-export all types from Firestore
+export type { Product, Order, OrderItem, User, Store } from '@/lib/firebase/firestore'
 
-export interface OrderItem {
-  productId: string
-  productName: string
-  quantity: number
-  price: number
-  total: number
-}
-
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: 'admin' | 'user'
-}
-
+// Additional types for the app
 export interface CartItem {
   product: Product
   quantity: number
@@ -46,4 +12,4 @@ export interface CartItem {
 export interface AdminCredentials {
   email: string
   password: string
-} 
+}
