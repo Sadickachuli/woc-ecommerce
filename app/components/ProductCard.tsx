@@ -19,7 +19,7 @@ export default function ProductCard({ product, currency }: ProductCardProps) {
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
-    addItem(product)
+    addItem(product, currency)
     toast.success(`${product.name} added to cart!`)
   }
 

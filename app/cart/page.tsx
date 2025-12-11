@@ -5,10 +5,16 @@ import { useCart } from '../contexts/CartContext'
 import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { formatPrice } from '@/lib/currencies'
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
   const router = useRouter()
+
+  // Check if cart has mixed currencies
+  const currencies = [...new Set(state.items.map(item => item.currency || 'USD'))]
+  const hasMixedCurrencies = currencies.length > 1
+  const mainCurrency = currencies[0] || 'USD'
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -83,7 +89,7 @@ export default function CartPage() {
                         <h3 className="font-medium text-gray-900">{item.product.name}</h3>
                         <p className="text-sm text-gray-500">{item.product.category}</p>
                         <p className="text-lg font-semibold text-primary-600">
-                          ${item.product.price.toFixed(2)}
+                          {formatPrice(item.product.price, item.currency)}
                         </p>
                       </div>
 
@@ -136,17 +142,34 @@ export default function CartPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${state.total.toFixed(2)}</span>
+                  <span className="font-medium">
+                    {hasMixedCurrencies ? (
+                      <span className="text-sm">Mixed currencies</span>
+                    ) : (
+                      formatPrice(state.total, mainCurrency)
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-medium">Free</span>
                 </div>
+                {hasMixedCurrencies && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
+                    <p className="text-xs text-yellow-800">
+                      ⚠️ Your cart contains items in different currencies. Prices shown in their respective currencies.
+                    </p>
+                  </div>
+                )}
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold">Total</span>
                     <span className="text-lg font-semibold text-primary-600">
-                      ${state.total.toFixed(2)}
+                      {hasMixedCurrencies ? (
+                        <span className="text-sm">See items above</span>
+                      ) : (
+                        formatPrice(state.total, mainCurrency)
+                      )}
                     </span>
                   </div>
                 </div>

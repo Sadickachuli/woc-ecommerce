@@ -6,6 +6,7 @@ import { Product } from '../types'
 interface CartItem {
   product: Product
   quantity: number
+  currency?: string // Store's currency for this product
 }
 
 interface CartState {
@@ -14,14 +15,14 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; payload: Product }
+  | { type: 'ADD_ITEM'; payload: { product: Product; currency?: string } }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
   | { type: 'CLEAR_CART' }
 
 const CartContext = createContext<{
   state: CartState
-  addItem: (product: Product) => void
+  addItem: (product: Product, currency?: string) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -30,12 +31,13 @@ const CartContext = createContext<{
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const existingItem = state.items.find(item => item.product.id === action.payload.id!)
+      const { product, currency } = action.payload
+      const existingItem = state.items.find(item => item.product.id === product.id!)
       
       if (existingItem) {
         // Update quantity if item already exists
         const updatedItems = state.items.map(item =>
-          item.product.id === action.payload.id!
+          item.product.id === product.id!
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -45,8 +47,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
         }
       } else {
-        // Add new item
-        const newItems = [...state.items, { product: action.payload, quantity: 1 }]
+        // Add new item with currency
+        const newItems = [...state.items, { product, quantity: 1, currency }]
         return {
           ...state,
           items: newItems,
@@ -95,8 +97,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     total: 0
   })
 
-  const addItem = (product: Product) => {
-    dispatch({ type: 'ADD_ITEM', payload: product })
+  const addItem = (product: Product, currency?: string) => {
+    dispatch({ type: 'ADD_ITEM', payload: { product, currency } })
   }
 
   const removeItem = (productId: string) => {

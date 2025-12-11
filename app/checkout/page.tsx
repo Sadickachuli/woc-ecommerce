@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle, Mail, Phone, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { formatPrice } from '@/lib/currencies'
 
 interface CheckoutForm {
   firstName: string
@@ -146,13 +147,13 @@ export default function CheckoutPage() {
                 {state.items.map((item) => (
                   <div key={item.product.id!} className="flex justify-between">
                     <span>{item.product.name} x {item.quantity}</span>
-                    <span>${(item.product.price * item.quantity).toFixed(2)}</span>
+                    <span>{formatPrice(item.product.price * item.quantity, item.currency)}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2 mt-4">
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
-                    <span>${state.total.toFixed(2)}</span>
+                    <span>{formatPrice(state.total, state.items[0]?.currency)}</span>
                   </div>
                 </div>
               </div>
@@ -356,7 +357,7 @@ export default function CheckoutPage() {
                 disabled={isSubmitting}
                 className="w-full bg-primary-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Processing Order...' : `Place Order - $${state.total.toFixed(2)}`}
+                {isSubmitting ? 'Processing Order...' : `Place Order - ${formatPrice(state.total, state.items[0]?.currency)}`}
               </button>
             </form>
           </div>
@@ -387,7 +388,7 @@ export default function CheckoutPage() {
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                     </div>
                     <span className="font-medium">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity, item.currency)}
                     </span>
                   </div>
                 ))}
@@ -397,7 +398,7 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">${state.total.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(state.total, state.items[0]?.currency)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
@@ -407,7 +408,7 @@ export default function CheckoutPage() {
                     <div className="flex justify-between">
                       <span className="text-lg font-semibold">Total</span>
                       <span className="text-lg font-semibold text-primary-600">
-                        ${state.total.toFixed(2)}
+                        {formatPrice(state.total, state.items[0]?.currency)}
                       </span>
                     </div>
                   </div>
