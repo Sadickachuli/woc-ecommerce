@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle, Mail, Phone, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/currencies'
+import { getStore, Store as StoreType } from '@/lib/firebase/firestore'
 
 interface CheckoutForm {
   firstName: string
@@ -25,6 +26,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isOrderComplete, setIsOrderComplete] = useState(false)
+  const [storeInfo, setStoreInfo] = useState<StoreType | null>(null)
+  const [loadingStore, setLoadingStore] = useState(true)
 
   const [formData, setFormData] = useState<CheckoutForm>({
     firstName: '',
@@ -37,6 +40,30 @@ export default function CheckoutPage() {
     zipCode: '',
     country: 'Ghana'
   })
+
+  // Load store information for shipping
+  useEffect(() => {
+    const loadStore = async () => {
+      if (state.items.length > 0) {
+        const storeId = state.items[0].storeId
+        try {
+          const store = await getStore(storeId)
+          setStoreInfo(store)
+        } catch (error) {
+          console.error('Error loading store:', error)
+        }
+      }
+      setLoadingStore(false)
+    }
+    loadStore()
+  }, [state.items])
+
+  // Calculate shipping cost
+  const shippingCost = storeInfo?.shipping?.type === 'flat_rate' 
+    ? (storeInfo.shipping.cost || 0) 
+    : 0
+  const shippingType = storeInfo?.shipping?.type || 'free'
+  const orderTotal = state.total + shippingCost
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -72,6 +99,8 @@ export default function CheckoutPage() {
           country: formData.country
         },
         total: state.total,
+        shippingCost: shippingCost,
+        shippingType: shippingType,
         status: 'pending' as const
       }
 
@@ -427,13 +456,37 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">Free</span>
+                    <span className="font-medium">
+                      {loadingStore ? (
+                        <span className="text-sm text-gray-400">Loading...</span>
+                      ) : shippingType === 'free' ? (
+                        <span className="text-green-600">Free</span>
+                      ) : shippingType === 'flat_rate' ? (
+                        formatPrice(shippingCost, state.items[0]?.currency)
+                      ) : (
+                        <span className="text-sm text-blue-600">To be discussed</span>
+                      )}
+                    </span>
                   </div>
+                  {shippingType === 'contact_seller' && !loadingStore && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                      <p className="text-xs text-blue-800">
+                        <strong>Note:</strong> The seller will contact you after you place your order to discuss shipping costs based on your location.
+                      </p>
+                    </div>
+                  )}
                   <div className="border-t border-gray-200 pt-2">
                     <div className="flex justify-between">
                       <span className="text-lg font-semibold">Total</span>
                       <span className="text-lg font-semibold text-primary-600">
-                        {formatPrice(state.total, state.items[0]?.currency)}
+                        {shippingType === 'contact_seller' ? (
+                          <div className="text-right">
+                            <div>{formatPrice(state.total, state.items[0]?.currency)}</div>
+                            <div className="text-xs font-normal text-blue-600">+ shipping TBD</div>
+                          </div>
+                        ) : (
+                          formatPrice(orderTotal, state.items[0]?.currency)
+                        )}
                       </span>
                     </div>
                   </div>

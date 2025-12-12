@@ -1,20 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatPrice } from '@/lib/currencies'
+import { getStore, Store as StoreType } from '@/lib/firebase/firestore'
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
   const router = useRouter()
+  const [storeInfo, setStoreInfo] = useState<StoreType | null>(null)
+  const [loadingStore, setLoadingStore] = useState(true)
 
   // Check if cart has mixed currencies
   const currencies = [...new Set(state.items.map(item => item.currency || 'USD'))]
   const hasMixedCurrencies = currencies.length > 1
   const mainCurrency = currencies[0] || 'USD'
+
+  // Load store information for shipping
+  useEffect(() => {
+    const loadStore = async () => {
+      if (state.items.length > 0) {
+        const storeId = state.items[0].storeId
+        try {
+          const store = await getStore(storeId)
+          setStoreInfo(store)
+        } catch (error) {
+          console.error('Error loading store:', error)
+        }
+      }
+      setLoadingStore(false)
+    }
+    loadStore()
+  }, [state.items])
+
+  // Calculate shipping cost
+  const shippingCost = storeInfo?.shipping?.type === 'flat_rate' 
+    ? (storeInfo.shipping.cost || 0) 
+    : 0
+  const shippingType = storeInfo?.shipping?.type || 'free'
+  const orderTotal = state.total + shippingCost
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -160,8 +187,25 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">Free</span>
+                  <span className="font-medium">
+                    {loadingStore ? (
+                      <span className="text-sm text-gray-400">Loading...</span>
+                    ) : shippingType === 'free' ? (
+                      <span className="text-green-600">Free</span>
+                    ) : shippingType === 'flat_rate' ? (
+                      formatPrice(shippingCost, mainCurrency)
+                    ) : (
+                      <span className="text-sm text-blue-600">To be discussed</span>
+                    )}
+                  </span>
                 </div>
+                {shippingType === 'contact_seller' && !loadingStore && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-xs text-blue-800">
+                      <strong>Note:</strong> Shipping cost will be discussed with the seller after you place your order based on your location.
+                    </p>
+                  </div>
+                )}
                 {hasMixedCurrencies && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
                     <p className="text-xs text-yellow-800">
@@ -175,8 +219,13 @@ export default function CartPage() {
                     <span className="text-lg font-semibold text-primary-600">
                       {hasMixedCurrencies ? (
                         <span className="text-sm">See items above</span>
+                      ) : shippingType === 'contact_seller' ? (
+                        <div className="text-right">
+                          <div>{formatPrice(state.total, mainCurrency)}</div>
+                          <div className="text-xs font-normal text-blue-600">+ shipping TBD</div>
+                        </div>
                       ) : (
-                        formatPrice(state.total, mainCurrency)
+                        formatPrice(orderTotal, mainCurrency)
                       )}
                     </span>
                   </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Store, Palette, Image as ImageIcon, Save, Eye, DollarSign } from 'lucide-react'
+import { Store, Palette, Image as ImageIcon, Save, Eye, DollarSign, Truck } from 'lucide-react'
 import { getCurrentUser, onAuthChange } from '@/lib/firebase/auth'
 import { getUser, getStoreByOwner, updateStoreBranding } from '@/lib/firebase/firestore'
 import { Store as StoreType } from '@/lib/firebase/firestore'
@@ -27,6 +27,14 @@ export default function StoreSettingsPage() {
     description: '',
     tagline: '',
     currency: DEFAULT_CURRENCY
+  })
+
+  const [shipping, setShipping] = useState<{
+    type: 'free' | 'flat_rate' | 'contact_seller'
+    cost: number
+  }>({
+    type: 'free',
+    cost: 0
   })
 
   useEffect(() => {
@@ -61,6 +69,14 @@ export default function StoreSettingsPage() {
                 currency: sellerStore.currency || DEFAULT_CURRENCY
               }))
             }
+
+            // Load shipping settings if available
+            if (sellerStore?.shipping) {
+              setShipping({
+                type: sellerStore.shipping.type,
+                cost: sellerStore.shipping.cost || 0
+              })
+            }
           }
         }
       }
@@ -83,10 +99,11 @@ export default function StoreSettingsPage() {
       // Separate currency from branding
       const { currency, ...brandingData } = branding
       
-      // Save both branding and currency at store level
+      // Save branding, currency, and shipping at store level
       await updateStoreBranding(store.id!, {
         branding: brandingData,
-        currency: currency
+        currency: currency,
+        shipping: shipping
       })
       toast.success('Store settings updated successfully!')
     } catch (error) {
@@ -182,6 +199,106 @@ export default function StoreSettingsPage() {
               <p className="mt-2 text-sm text-gray-500">
                 All product prices in your store will be displayed in this currency.
               </p>
+            </div>
+          </div>
+
+          {/* Shipping Settings */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <Truck className="w-5 h-5 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Shipping Settings</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  How do you handle shipping?
+                </label>
+                <div className="space-y-3">
+                  {/* Free Shipping */}
+                  <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    style={{ borderColor: shipping.type === 'free' ? '#3b82f6' : '#e5e7eb' }}>
+                    <input
+                      type="radio"
+                      name="shippingType"
+                      value="free"
+                      checked={shipping.type === 'free'}
+                      onChange={(e) => setShipping({ ...shipping, type: e.target.value as 'free' | 'flat_rate' | 'contact_seller' })}
+                      className="mt-1 w-4 h-4 text-blue-600"
+                    />
+                    <div className="ml-3">
+                      <div className="font-medium text-gray-900">Free Shipping</div>
+                      <div className="text-sm text-gray-500">
+                        You offer free shipping on all orders
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Flat Rate */}
+                  <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    style={{ borderColor: shipping.type === 'flat_rate' ? '#3b82f6' : '#e5e7eb' }}>
+                    <input
+                      type="radio"
+                      name="shippingType"
+                      value="flat_rate"
+                      checked={shipping.type === 'flat_rate'}
+                      onChange={(e) => setShipping({ ...shipping, type: e.target.value as 'free' | 'flat_rate' | 'contact_seller' })}
+                      className="mt-1 w-4 h-4 text-blue-600"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="font-medium text-gray-900">Flat Rate Shipping</div>
+                      <div className="text-sm text-gray-500 mb-3">
+                        Charge a fixed shipping cost for all orders
+                      </div>
+                      {shipping.type === 'flat_rate' && (
+                        <div className="mt-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Shipping Cost
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-600">{CURRENCIES.find(c => c.code === branding.currency)?.symbol || '$'}</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={shipping.cost}
+                              onChange={(e) => setShipping({ ...shipping, cost: parseFloat(e.target.value) || 0 })}
+                              className="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Contact Seller */}
+                  <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    style={{ borderColor: shipping.type === 'contact_seller' ? '#3b82f6' : '#e5e7eb' }}>
+                    <input
+                      type="radio"
+                      name="shippingType"
+                      value="contact_seller"
+                      checked={shipping.type === 'contact_seller'}
+                      onChange={(e) => setShipping({ ...shipping, type: e.target.value as 'free' | 'flat_rate' | 'contact_seller' })}
+                      className="mt-1 w-4 h-4 text-blue-600"
+                    />
+                    <div className="ml-3">
+                      <div className="font-medium text-gray-900">Contact for Shipping Cost</div>
+                      <div className="text-sm text-gray-500">
+                        Shipping cost varies by location. You'll discuss it with buyers directly after they place an order.
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Buyers will see your shipping policy at checkout. If you choose "Contact for Shipping Cost", 
+                  buyers will complete their order and you'll contact them to arrange shipping and finalize the total cost.
+                </p>
+              </div>
             </div>
           </div>
 

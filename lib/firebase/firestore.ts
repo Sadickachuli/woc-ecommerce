@@ -33,6 +33,10 @@ export interface Store {
   status: 'pending' | 'verified' | 'rejected'
   contactEmail: string
   currency?: string // Store's preferred currency (USD, EUR, GBP, NGN, etc.)
+  shipping?: {
+    type: 'free' | 'flat_rate' | 'contact_seller'
+    cost?: number // Used when type is 'flat_rate'
+  }
   applicationDetails: {
     productInfo: string
     socialMediaLinks: string
@@ -69,6 +73,8 @@ export interface Order {
   customerAddress: string
   items: OrderItem[]
   total: number
+  shippingCost?: number
+  shippingType?: 'free' | 'flat_rate' | 'contact_seller'
   status: 'pending' | 'processing' | 'completed' | 'cancelled'
   createdAt?: Timestamp | ReturnType<typeof serverTimestamp>
 }
