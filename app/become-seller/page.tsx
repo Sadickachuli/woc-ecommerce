@@ -87,7 +87,6 @@ export default function BecomeSellerPage() {
       
       toast.success('Application submitted successfully! Check your email (including spam folder) for verification.', {
         duration: 6000,
-        icon: '🎉',
       })
     } catch (error) {
       console.error('Error submitting application:', error)
@@ -143,7 +142,7 @@ export default function BecomeSellerPage() {
                 </svg>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                🎉 Application Submitted!
+                Application Submitted Successfully
               </h2>
               <p className="text-gray-600 text-lg">
                 Thank you for applying to become a seller
@@ -160,7 +159,7 @@ export default function BecomeSellerPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-base font-bold text-yellow-800 mb-2">
-                    📧 Important: Check Your Spam/Junk Folder!
+                    Important: Check Your Spam/Junk Folder
                   </h3>
                   <p className="text-sm text-yellow-700 leading-relaxed mb-2">
                     Once your application is reviewed and approved, we'll send you a <strong>verification email</strong>. 
@@ -176,24 +175,24 @@ export default function BecomeSellerPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <h3 className="text-sm font-semibold text-blue-800 mb-2">
-                📋 What Happens Next?
+                What Happens Next?
               </h3>
               <ul className="text-sm text-blue-700 space-y-2">
                 <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 mt-1">1️⃣</span>
+                  <span className="flex-shrink-0 mt-1 font-semibold">1.</span>
                   <span>Our team will review your application (usually within 24-48 hours)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 mt-1">2️⃣</span>
+                  <span className="flex-shrink-0 mt-1 font-semibold">2.</span>
                   <span>You'll receive a verification email once approved</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 mt-1">3️⃣</span>
+                  <span className="flex-shrink-0 mt-1 font-semibold">3.</span>
                   <span>Access your seller dashboard to start adding products</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 mt-1">4️⃣</span>
-                  <span>Customize your store and start selling!</span>
+                  <span className="flex-shrink-0 mt-1 font-semibold">4.</span>
+                  <span>Customize your store and start selling</span>
                 </li>
               </ul>
             </div>
@@ -236,7 +235,7 @@ export default function BecomeSellerPage() {
               <>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
                   <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                    ⏳ Under Review
+                    Application Under Review
                   </h3>
                   <p className="text-yellow-700 mb-3">
                     Your seller application for <strong>{existingStore.storeName}</strong> is currently under review. 
@@ -245,7 +244,7 @@ export default function BecomeSellerPage() {
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                   <p className="text-sm text-blue-800">
-                    <strong>📧 Remember:</strong> Check your <strong>spam/junk folder</strong> for the verification email!
+                    <strong>Remember:</strong> Check your <strong>spam/junk folder</strong> for the verification email.
                   </p>
                 </div>
               </>
@@ -254,7 +253,7 @@ export default function BecomeSellerPage() {
             {existingStore.status === 'verified' && (
               <div className="bg-green-50 border border-green-200 rounded-md p-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-2">
-                  You're Already a Seller! ✨
+                  You're Already a Verified Seller
                 </h3>
                 <p className="text-green-700 mb-4">
                   Your store <strong>{existingStore.storeName}</strong> is verified and active.
