@@ -113,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               <span className="text-2xl">🚫</span>
               <div className="flex-1">
                 <p className="font-bold text-sm text-red-700">Cannot Add Item</p>
-                <p className="text-xs text-gray-700">You can only order from one store at a time</p>
+                <p className="text-xs text-gray-700">You can only order from one store at a time. This belongs to a different store.</p>
               </div>
             </div>
             <div className="text-xs bg-red-50 p-2 rounded border border-red-300">
