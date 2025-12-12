@@ -437,19 +437,41 @@ The ${siteName} Team
         `,
       }))
 
-      // Send all emails in parallel with rate limit consideration
-      console.log(`🚀 Sending ${emailPromises.length} emails in parallel...`)
-      
-      // Resend rate limit: ~1 email/second on free tier
-      // If we have many emails, add small delays between batches
-      if (emailPromises.length > 5) {
-        console.log(`⚠️ Large batch detected (${emailPromises.length} emails). Using batched sending to avoid rate limits...`)
-      }
+      // Send emails in batches to avoid rate limits
+      console.log(`🚀 Sending ${emailPromises.length} emails in batches to avoid rate limits...`)
       
       const startTime = Date.now()
+      const BATCH_SIZE = 2  // Send 2 emails at a time
+      const BATCH_DELAY_MS = 1000  // Wait 1 second between batches
       
-      // Use Promise.allSettled to allow some emails to fail without blocking others
-      const results = await Promise.allSettled(emailPromises)
+      const results: PromiseSettledResult<any>[] = []
+      
+      // Send emails in batches
+      for (let i = 0; i < emailPromises.length; i += BATCH_SIZE) {
+        const batch = emailPromises.slice(i, i + BATCH_SIZE)
+        const batchLabels = emailLabels.slice(i, i + BATCH_SIZE)
+        
+        console.log(`📤 Batch ${Math.floor(i / BATCH_SIZE) + 1}: Sending ${batch.length} email(s)...`)
+        batchLabels.forEach(label => console.log(`   - ${label}`))
+        
+        const batchResults = await Promise.allSettled(batch)
+        results.push(...batchResults)
+        
+        // Log immediate results for this batch
+        batchResults.forEach((result, idx) => {
+          if (result.status === 'fulfilled') {
+            console.log(`   ✅ ${batchLabels[idx]}: Sent`)
+          } else {
+            console.error(`   ❌ ${batchLabels[idx]}: ${result.reason}`)
+          }
+        })
+        
+        // Wait before next batch (unless this is the last batch)
+        if (i + BATCH_SIZE < emailPromises.length) {
+          console.log(`   ⏳ Waiting ${BATCH_DELAY_MS}ms before next batch...`)
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS))
+        }
+      }
       
       const endTime = Date.now()
       const duration = ((endTime - startTime) / 1000).toFixed(2)
