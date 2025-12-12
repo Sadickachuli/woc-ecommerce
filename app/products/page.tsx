@@ -157,9 +157,13 @@ export default function ProductsPage() {
                     {store.branding?.tagline && (
                       <p className="text-xs text-gray-500 truncate">{store.branding.tagline}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      {storeProductCount} {storeProductCount === 1 ? 'product' : 'products'}
-                    </p>
+                    {isLoading ? (
+                      <p className="text-xs text-gray-400 mt-1 italic">Loading...</p>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {storeProductCount} {storeProductCount === 1 ? 'product' : 'products'}
+                      </p>
+                    )}
                   </div>
                 </Link>
               )
