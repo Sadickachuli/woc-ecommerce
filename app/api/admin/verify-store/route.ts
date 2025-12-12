@@ -41,8 +41,12 @@ export async function POST(request: NextRequest) {
       if (!resend) {
         console.log('Resend API key not configured, skipping email')
       } else {
+        const fromEmail = process.env.RESEND_FROM_DOMAIN 
+          ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
+          : 'onboarding@resend.dev'
+        
         await resend.emails.send({
-          from: 'onboarding@resend.dev', // Use your verified domain here
+          from: fromEmail,
           to: store.contactEmail,
           subject: 'Your Store has been Verified! 🎉',
         html: `

@@ -114,8 +114,12 @@ export async function POST(request: NextRequest) {
         const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
         // Email to store owner
+        const fromEmail = process.env.RESEND_FROM_DOMAIN 
+          ? `orders@${process.env.RESEND_FROM_DOMAIN}`
+          : 'onboarding@resend.dev'
+        
         await resend.emails.send({
-          from: 'onboarding@resend.dev',
+          from: fromEmail,
           to: sellerEmail,
           subject: `New Order #${order.id} - ${store.storeName}`,
           html: `
@@ -154,11 +158,14 @@ export async function POST(request: NextRequest) {
       }
 
       // Send email to main admin
-      const adminEmail = process.env.ADMIN_EMAIL || 'wingsofchangeghana@gmail.com'
+      const adminEmail = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
+      const fromEmail = process.env.RESEND_FROM_DOMAIN 
+        ? `orders@${process.env.RESEND_FROM_DOMAIN}`
+        : 'onboarding@resend.dev'
       console.log(`📧 Sending admin notification to: ${adminEmail}`)
       
       await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: fromEmail,
         to: adminEmail,
         subject: `New Order #${order.id} - Platform Admin Notification`,
         html: `
@@ -198,9 +205,12 @@ export async function POST(request: NextRequest) {
 
       // Email to customer
       console.log(`📧 Sending order confirmation to customer: ${customer.email}`)
+      const customerFromEmail = process.env.RESEND_FROM_DOMAIN 
+        ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
+        : 'onboarding@resend.dev'
       
       await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: customerFromEmail,
         to: customer.email,
         subject: `Order Confirmation #${order.id}`,
         html: `
