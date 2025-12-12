@@ -48,22 +48,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
         }
       } else {
-        // Check if cart has items from a different store
-        if (state.items.length > 0) {
-          const firstItemStoreId = state.items[0].product.storeId
-          const newItemStoreId = product.storeId
-          
-          if (firstItemStoreId !== newItemStoreId) {
-            // Different store - clear cart and replace with new item
-            const newItems = [{ product, quantity: 1, currency }]
-            return {
-              items: newItems,
-              total: newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-            }
-          }
-        }
-        
-        // Add new item with currency (same store or empty cart)
+        // Add new item with currency
+        // Note: Different store check is handled in addItem function
         const newItems = [...state.items, { product, quantity: 1, currency }]
         return {
           ...state,
@@ -114,37 +100,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
   })
 
   const addItem = (product: Product, currency?: string) => {
-    // Check if adding from different store
+    // Check if adding from different store - BLOCK if different
     if (state.items.length > 0) {
       const firstItemStoreId = state.items[0].product.storeId
       const newItemStoreId = product.storeId
       
       if (firstItemStoreId !== newItemStoreId) {
-        // Show warning BEFORE clearing cart
+        // PREVENT adding from different store
         toast((t) => (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl">🚫</span>
               <div className="flex-1">
-                <p className="font-bold text-sm">Different Store Detected</p>
-                <p className="text-xs text-gray-600">Previous cart items will be replaced</p>
+                <p className="font-bold text-sm text-red-700">Cannot Add Item</p>
+                <p className="text-xs text-gray-700">You can only order from one store at a time</p>
               </div>
             </div>
-            <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
-              💡 <strong>Tip:</strong> Checkout before shopping from another store
+            <div className="text-xs bg-red-50 p-2 rounded border border-red-300">
+              <strong>Please checkout your current items first,</strong> then you can shop from other stores
             </div>
           </div>
         ), {
           duration: 5000,
           style: {
-            background: '#FEF3C7',
-            border: '2px solid #F59E0B',
+            background: '#FEE2E2',
+            border: '2px solid #DC2626',
             padding: '12px',
           },
         })
+        
+        // DO NOT add the item - return without dispatching
+        return
       }
     }
     
+    // Same store or empty cart - allow adding
     dispatch({ type: 'ADD_ITEM', payload: { product, currency } })
   }
 
