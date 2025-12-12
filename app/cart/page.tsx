@@ -34,14 +34,14 @@ export default function CartPage() {
   if (state.items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="text-center">
-            <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
-            <p className="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
+            <ShoppingCart className="w-14 h-14 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
+            <p className="text-sm sm:text-base text-gray-600 mb-8 px-4">Looks like you haven't added any items to your cart yet.</p>
             <Link
               href="/products"
-              className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors inline-flex items-center gap-2"
+              className="bg-primary-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors inline-flex items-center gap-2 text-sm sm:text-base"
             >
               Continue Shopping
               <ArrowRight className="w-4 h-4" />
@@ -54,69 +54,77 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Shopping Cart</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow">
-              <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                   Cart Items ({state.items.length})
                 </h2>
                 
                 <div className="space-y-4">
                   {state.items.map((item) => (
-                    <div key={item.product.id!} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                      {/* Product Image */}
-                      <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                        {item.product.image ? (
-                          <img
-                            src={item.product.image}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <span className="text-gray-500 font-bold text-lg">
-                            {item.product.name.charAt(0)}
-                          </span>
-                        )}
-                      </div>
+                    <div key={item.product.id!} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex gap-4">
+                        {/* Product Image - Larger on mobile, fixed on desktop */}
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-24 md:h-24 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+                          {item.product.image ? (
+                            <img
+                              src={item.product.image}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                          ) : (
+                            <span className="text-gray-500 font-bold text-2xl sm:text-3xl md:text-2xl">
+                              {item.product.name.charAt(0)}
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Product Info */}
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{item.product.name}</h3>
-                        <p className="text-sm text-gray-500">{item.product.category}</p>
-                        <p className="text-lg font-semibold text-primary-600">
-                          {formatPrice(item.product.price, item.currency)}
-                        </p>
-                      </div>
+                        {/* Product Info & Controls */}
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          {/* Product Details */}
+                          <div className="flex-1">
+                            <h3 className="font-medium text-gray-900 text-base sm:text-lg truncate">{item.product.name}</h3>
+                            <p className="text-sm text-gray-500 mt-0.5">{item.product.category}</p>
+                            <p className="text-lg sm:text-xl font-semibold text-primary-600 mt-1">
+                              {formatPrice(item.product.price, item.currency)}
+                            </p>
+                          </div>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleQuantityChange(item.product.id!, item.quantity - 1)}
-                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-12 text-center font-medium">{item.quantity}</span>
-                        <button
-                          onClick={() => handleQuantityChange(item.product.id!, item.quantity + 1)}
-                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
+                          {/* Quantity Controls & Remove Button */}
+                          <div className="flex items-center justify-between mt-3 gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id!, item.quantity - 1)}
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                              >
+                                <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </button>
+                              <span className="w-10 sm:w-12 text-center font-semibold text-base sm:text-lg">{item.quantity}</span>
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id!, item.quantity + 1)}
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                              >
+                                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </button>
+                            </div>
 
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeItem(item.product.id!)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                            {/* Remove Button - More prominent on mobile */}
+                            <button
+                              onClick={() => removeItem(item.product.id!)}
+                              className="text-red-500 hover:text-red-700 active:text-red-800 p-2 -mr-2"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -136,8 +144,8 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6 sticky top-4">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
