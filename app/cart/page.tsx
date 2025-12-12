@@ -23,7 +23,7 @@ export default function CartPage() {
   useEffect(() => {
     const loadStore = async () => {
       if (state.items.length > 0) {
-        const storeId = state.items[0].storeId
+        const storeId = state.items[0].product.storeId
         try {
           const store = await getStore(storeId)
           setStoreInfo(store)
