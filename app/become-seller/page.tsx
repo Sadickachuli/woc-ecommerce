@@ -12,6 +12,7 @@ export default function BecomeSellerPage() {
   const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [existingStore, setExistingStore] = useState<any>(null)
   
   const [formData, setFormData] = useState({
@@ -82,12 +83,17 @@ export default function BecomeSellerPage() {
         createdAt: new Date() as any
       })
 
-      toast.success('Application submitted successfully! We will review it shortly.')
+      setSubmitted(true)
       
-      // Redirect to a confirmation page or dashboard
+      toast.success('Application submitted successfully! Check your email (including spam folder) for verification.', {
+        duration: 6000,
+        icon: '🎉',
+      })
+      
+      // Redirect to dashboard after showing success message
       setTimeout(() => {
         router.push('/admin/dashboard')
-      }, 2000)
+      }, 5000)
     } catch (error) {
       console.error('Error submitting application:', error)
       toast.error('Failed to submit application')
@@ -130,6 +136,89 @@ export default function BecomeSellerPage() {
     )
   }
 
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl w-full">
+          <div className="bg-white rounded-lg shadow-xl p-8">
+            <div className="text-center mb-6">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                🎉 Application Submitted!
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Thank you for applying to become a seller
+              </p>
+            </div>
+
+            {/* Spam Warning - Prominent */}
+            <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-5 mb-6">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  <svg className="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-bold text-yellow-800 mb-2">
+                    📧 Important: Check Your Spam/Junk Folder!
+                  </h3>
+                  <p className="text-sm text-yellow-700 leading-relaxed mb-2">
+                    Once your application is reviewed and approved, we'll send you a <strong>verification email</strong>. 
+                    This email may land in your <strong>spam or junk folder</strong>.
+                  </p>
+                  <p className="text-sm text-yellow-700 leading-relaxed">
+                    Please check your spam folder regularly and <strong>mark our emails as "Not Spam"</strong> to ensure 
+                    you receive all important notifications about your store, including order alerts.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-semibold text-blue-800 mb-2">
+                📋 What Happens Next?
+              </h3>
+              <ul className="text-sm text-blue-700 space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">1️⃣</span>
+                  <span>Our team will review your application (usually within 24-48 hours)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">2️⃣</span>
+                  <span>You'll receive a verification email once approved</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">3️⃣</span>
+                  <span>Access your seller dashboard to start adding products</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">4️⃣</span>
+                  <span>Customize your store and start selling!</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Redirecting to your dashboard in a moment...
+              </p>
+              <div className="animate-pulse">
+                <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 rounded-full animate-[loading_5s_ease-in-out]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (existingStore) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -140,15 +229,22 @@ export default function BecomeSellerPage() {
             </h2>
             
             {existingStore.status === 'pending' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Under Review
-                </h3>
-                <p className="text-yellow-700">
-                  Your seller application for <strong>{existingStore.storeName}</strong> is currently under review. 
-                  We'll notify you via email once it's been processed.
-                </p>
-              </div>
+              <>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                  <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                    ⏳ Under Review
+                  </h3>
+                  <p className="text-yellow-700 mb-3">
+                    Your seller application for <strong>{existingStore.storeName}</strong> is currently under review. 
+                    We'll notify you via email once it's been processed.
+                  </p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>📧 Remember:</strong> Check your <strong>spam/junk folder</strong> for the verification email!
+                  </p>
+                </div>
+              </>
             )}
             
             {existingStore.status === 'verified' && (

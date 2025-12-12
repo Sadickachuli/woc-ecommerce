@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { updateStoreStatus, getStore, updateUserRole } from '@/lib/firebase/firestore'
+import { updateStoreStatus, getStore, updateUserRole, getUser } from '@/lib/firebase/firestore'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -39,69 +39,161 @@ export async function POST(request: NextRequest) {
     try {
       // Skip email if no API key configured
       if (!resend) {
-        console.log('Resend API key not configured, skipping email')
+        console.log('⚠️ Resend API key not configured, skipping verification email')
       } else {
+        // Get the seller's actual Google account email
+        const seller = await getUser(store.ownerUid)
+        const sellerEmail = seller?.email || store.contactEmail
+        
         const fromEmail = process.env.RESEND_FROM_DOMAIN 
           ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
           : 'onboarding@resend.dev'
         
+        const adminEmail = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const siteName = process.env.RESEND_FROM_DOMAIN 
+          ? process.env.RESEND_FROM_DOMAIN.replace(/\.[^.]+$/, '').split('.').pop()?.toUpperCase()
+          : 'E-commerce Platform'
+        
+        console.log(`📧 Sending verification email to: ${sellerEmail} for store: ${store.storeName}`)
+        
         await resend.emails.send({
-          from: fromEmail,
-          to: store.contactEmail,
-          subject: 'Your Store has been Verified! 🎉',
-        html: `
-          <!DOCTYPE html>
-          <html>
+          from: `${siteName} <${fromEmail}>`,
+          replyTo: adminEmail,
+          to: sellerEmail,
+          subject: '🎉 Your Store has been Verified!',
+          html: `
+            <!DOCTYPE html>
+            <html>
             <head>
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Store Verified</title>
             </head>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
-                <h1 style="color: #28a745; margin-bottom: 20px;">🎉 Congratulations!</h1>
-                
-                <p style="font-size: 16px; margin-bottom: 15px;">
-                  Great news! Your store <strong>${store.storeName}</strong> has been verified and approved.
-                </p>
-                
-                <p style="font-size: 16px; margin-bottom: 15px;">
-                  You can now:
-                </p>
-                
-                <ul style="font-size: 16px; margin-bottom: 20px;">
-                  <li>Log in to your seller dashboard</li>
-                  <li>Start uploading products</li>
-                  <li>Manage your inventory</li>
-                  <li>Process orders from customers</li>
-                </ul>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/dashboard" 
-                     style="background-color: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                    Go to Dashboard
-                  </a>
+            <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+              <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 32px;">🎉 Congratulations!</h1>
+                  <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 18px; opacity: 0.95;">Your store is now live!</p>
                 </div>
                 
-                <p style="font-size: 14px; color: #666; margin-top: 30px;">
-                  If you have any questions, please don't hesitate to reach out to our support team.
-                </p>
+                <!-- Content -->
+                <div style="padding: 40px 30px;">
+                  <div style="background: #d1fae5; padding: 25px; border-radius: 12px; margin-bottom: 30px; border-left: 5px solid #10b981;">
+                    <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 22px;">✅ Store Verified</h2>
+                    <p style="margin: 0; color: #047857; font-size: 16px; line-height: 1.6;">
+                      Great news! Your store <strong style="color: #065f46;">${store.storeName}</strong> has been verified and approved by our team.
+                    </p>
+                  </div>
+                  
+                  <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                    <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">🚀 What You Can Do Now:</h3>
+                    <ul style="margin: 0; padding-left: 20px; color: #555; line-height: 1.8;">
+                      <li><strong>Access your seller dashboard</strong></li>
+                      <li><strong>Start uploading products</strong> to your store</li>
+                      <li><strong>Customize your store</strong> branding and colors</li>
+                      <li><strong>Manage your inventory</strong> and pricing</li>
+                      <li><strong>Process customer orders</strong> and fulfill them</li>
+                      <li><strong>Track your sales</strong> and performance</li>
+                    </ul>
+                  </div>
+                  
+                  <!-- CTA Button -->
+                  <div style="text-align: center; margin: 35px 0;">
+                    <a href="${appUrl}/admin/dashboard" 
+                       style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                      Go to Your Dashboard →
+                    </a>
+                  </div>
+                  
+                  <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                      <strong>⚠️ Important:</strong> This email may have landed in your spam or junk folder. Please add <strong>${fromEmail}</strong> to your contacts to ensure you receive all future notifications about your orders and store updates.
+                    </p>
+                  </div>
+                  
+                  <div style="background: #e0e7ff; padding: 20px; border-radius: 8px; margin-top: 25px;">
+                    <p style="margin: 0 0 10px 0; color: #3730a3; font-size: 15px; line-height: 1.6;">
+                      <strong>💡 Quick Tips for Success:</strong>
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; color: #4338ca; font-size: 14px; line-height: 1.7;">
+                      <li>Add high-quality product images</li>
+                      <li>Write detailed product descriptions</li>
+                      <li>Set competitive prices</li>
+                      <li>Respond to customer inquiries promptly</li>
+                      <li>Keep your inventory updated</li>
+                    </ul>
+                  </div>
+                  
+                  <div style="margin-top: 30px; padding-top: 25px; border-top: 2px solid #e5e7eb;">
+                    <p style="margin: 0 0 10px 0; color: #555; font-size: 15px;">
+                      Need help getting started? Our support team is here for you!
+                    </p>
+                    <p style="margin: 0; color: #666; font-size: 14px;">
+                      Reply to this email or contact us at <a href="mailto:${adminEmail}" style="color: #10b981; text-decoration: none;">${adminEmail}</a>
+                    </p>
+                  </div>
+                </div>
                 
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                
-                <p style="font-size: 12px; color: #999; text-align: center;">
-                  This email was sent to ${store.contactEmail} regarding your seller application.
-                </p>
+                <!-- Footer -->
+                <div style="background: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <p style="margin: 0 0 10px 0; color: #333; font-weight: bold; font-size: 16px;">
+                    Welcome to ${siteName}! 🎊
+                  </p>
+                  <p style="margin: 0 0 5px 0; color: #666; font-size: 13px;">
+                    This email was sent to ${sellerEmail}
+                  </p>
+                  <p style="margin: 0; color: #999; font-size: 12px;">
+                    Regarding your seller application for ${store.storeName}
+                  </p>
+                </div>
               </div>
             </body>
-          </html>
-        `,
+            </html>
+          `,
+          text: `
+🎉 Congratulations! Your Store has been Verified!
+
+Great news! Your store "${store.storeName}" has been verified and approved by our team.
+
+What You Can Do Now:
+- Access your seller dashboard
+- Start uploading products to your store
+- Customize your store branding and colors
+- Manage your inventory and pricing
+- Process customer orders and fulfill them
+- Track your sales and performance
+
+Get Started:
+Visit your dashboard: ${appUrl}/admin/dashboard
+
+⚠️ IMPORTANT - Check Your Spam Folder:
+This email may have landed in your spam or junk folder. Please add ${fromEmail} to your contacts to ensure you receive all future notifications about your orders and store updates.
+
+Quick Tips for Success:
+- Add high-quality product images
+- Write detailed product descriptions
+- Set competitive prices
+- Respond to customer inquiries promptly
+- Keep your inventory updated
+
+Need Help?
+Our support team is here for you! Reply to this email or contact us at ${adminEmail}
+
+Welcome to ${siteName}!
+
+---
+This email was sent to ${sellerEmail} regarding your seller application for ${store.storeName}
+          `,
         })
 
-        console.log(`Verification email sent to ${store.contactEmail}`)
+        console.log(`✅ Verification email sent successfully to: ${sellerEmail}`)
       }
     } catch (emailError) {
-      console.error('Error sending verification email:', emailError)
+      console.error('❌ Failed to send verification email:', emailError)
+      if (emailError instanceof Error) {
+        console.error('Email error details:', emailError.message)
+      }
       // Don't fail the entire request if email fails
       // The store is already verified
     }
