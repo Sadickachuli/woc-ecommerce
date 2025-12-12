@@ -36,6 +36,7 @@ import {
   Product,
   Order
 } from '@/lib/firebase/firestore'
+import { formatPrice } from '@/lib/currencies'
 import { User as FirebaseUser } from 'firebase/auth'
 import toast from 'react-hot-toast'
 
@@ -671,7 +672,27 @@ export default function AdminDashboard() {
                           {order.items.length} items
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${order.total.toFixed(2)}
+                          {(() => {
+                            // Check if order has items with currency info
+                            const currencies = order.items
+                              .map((item: any) => item.currency)
+                              .filter((c: string) => c)
+                            
+                            if (currencies.length === 0) {
+                              // No currency info, just show number
+                              return order.total.toFixed(2)
+                            }
+                            
+                            const uniqueCurrencies = [...new Set(currencies)]
+                            
+                            if (uniqueCurrencies.length > 1) {
+                              // Mixed currencies
+                              return <span className="text-orange-600 font-semibold">Mixed</span>
+                            } else {
+                              // Single currency
+                              return formatPrice(order.total, uniqueCurrencies[0])
+                            }
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
