@@ -7,6 +7,7 @@ import {
   getProduct,
   getUser
 } from '@/lib/firebase/firestore'
+import { formatPrice } from '@/lib/currencies'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -45,17 +46,26 @@ export async function POST(request: NextRequest) {
 
     console.log('Order validation passed, creating order...')
 
-    // Get store IDs from products
+    // Get store IDs from products and include currency
     const itemsWithStoreId = await Promise.all(
       items.map(async (item: any) => {
         const productId = item.productId || item.id
         const product = await getProduct(productId)
+        
+        // Get store to fetch currency
+        let currency = 'USD'
+        if (product?.storeId) {
+          const store = await getStore(product.storeId)
+          currency = store?.currency || 'USD'
+        }
+        
         return {
           productId,
           storeId: product?.storeId || 'unknown',
-          productName: item.name,
-          price: parseFloat(item.price),
-          quantity: item.quantity,
+        productName: item.name,
+        price: parseFloat(item.price),
+        quantity: item.quantity,
+          currency,
         }
       })
     )
@@ -111,6 +121,7 @@ export async function POST(request: NextRequest) {
         console.log(`📧 Sending email to seller: ${sellerEmail} for store: ${store.storeName}`)
 
         const storeItems = itemsWithStoreId.filter(item => item.storeId === storeId)
+        const storeCurrency = storeItems[0]?.currency || 'USD'
         const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
         // Email to store owner
@@ -118,88 +129,195 @@ export async function POST(request: NextRequest) {
           ? `orders@${process.env.RESEND_FROM_DOMAIN}`
           : 'onboarding@resend.dev'
         
-        await resend.emails.send({
-          from: fromEmail,
-          to: sellerEmail,
-          subject: `New Order #${order.id} - ${store.storeName}`,
+        const replyTo = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
+        
+      await resend.emails.send({
+          from: `${store.storeName} Orders <${fromEmail}>`,
+          replyTo: replyTo,
+        to: sellerEmail,
+          subject: `🛍️ New Order #${order.id} - ${store.storeName}`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2563eb;">New Order for ${store.storeName}!</h2>
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3>Order Details</h3>
-                <p><strong>Order ID:</strong> ${order.id}</p>
-                <p><strong>Your Store Total:</strong> $${storeTotal.toFixed(2)}</p>
-                <p><strong>Status:</strong> pending</p>
-              </div>
-              
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3>Customer Information</h3>
-                <p><strong>Name:</strong> ${customerName}</p>
-                <p><strong>Email:</strong> ${customer.email}</p>
-                ${customer.phone ? `<p><strong>Phone:</strong> ${customer.phone}</p>` : ''}
-                <p><strong>Address:</strong> ${customerAddress}</p>
-              </div>
-              
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3>Items from Your Store</h3>
-                ${storeItems.map((item: any) => `
-                  <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
-                    <p><strong>${item.productName}</strong></p>
-                    <p>Price: $${item.price.toFixed(2)} × ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+              <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 New Order!</h1>
+                  <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">${store.storeName}</p>
+                </div>
+                
+                <!-- Content -->
+                <div style="padding: 30px;">
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                    <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Order Details</h2>
+                    <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
+                    <p style="margin: 8px 0; color: #555;"><strong>Your Store Total:</strong> <span style="color: #667eea; font-size: 18px; font-weight: bold;">${formatPrice(storeTotal, storeCurrency)}</span></p>
+                    <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PENDING</span></p>
                   </div>
-                `).join('')}
+                  
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">👤 Customer Information</h2>
+                    <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${customerName}</p>
+                    <p style="margin: 8px 0; color: #555;"><strong>Email:</strong> <a href="mailto:${customer.email}" style="color: #667eea;">${customer.email}</a></p>
+                    ${customer.phone ? `<p style="margin: 8px 0; color: #555;"><strong>Phone:</strong> ${customer.phone}</p>` : ''}
+                    <p style="margin: 8px 0; color: #555;"><strong>Address:</strong> ${customerAddress}</p>
+                  </div>
+                  
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 Items from Your Store</h2>
+                    ${storeItems.map((item: any) => `
+                      <div style="border-bottom: 1px solid #e5e7eb; padding: 12px 0;">
+                        <p style="margin: 0 0 8px 0; color: #333; font-weight: bold;">${item.productName}</p>
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                          ${formatPrice(item.price, item.currency)} × ${item.quantity} = <strong>${formatPrice(item.price * item.quantity, item.currency)}</strong>
+                        </p>
+                      </div>
+                    `).join('')}
+                  </div>
+                  
+                  <div style="background: #e0e7ff; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <p style="margin: 0; color: #4338ca; font-size: 14px;">
+                      ℹ️ <strong>Next Steps:</strong> Please process this order and contact the customer if needed.
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">Best regards,</p>
+                  <p style="margin: 0; color: #333; font-weight: bold;">E-commerce Platform</p>
+                </div>
               </div>
-              
-              <p>Please process this order and contact the customer if needed.</p>
-              <p>Best regards,<br>E-commerce Platform</p>
-            </div>
+            </body>
+            </html>
+          `,
+          text: `
+New Order for ${store.storeName}!
+
+Order Details:
+- Order ID: #${order.id}
+- Your Store Total: ${formatPrice(storeTotal, storeCurrency)}
+- Status: pending
+
+Customer Information:
+- Name: ${customerName}
+- Email: ${customer.email}
+${customer.phone ? `- Phone: ${customer.phone}` : ''}
+- Address: ${customerAddress}
+
+Items from Your Store:
+${storeItems.map((item: any) => `- ${item.productName}: ${formatPrice(item.price, item.currency)} × ${item.quantity} = ${formatPrice(item.price * item.quantity, item.currency)}`).join('\n')}
+
+Please process this order and contact the customer if needed.
+
+Best regards,
+E-commerce Platform
           `,
         })
       }
 
       // Send email to main admin
       const adminEmail = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
-      const fromEmail = process.env.RESEND_FROM_DOMAIN 
+      const adminFromEmail = process.env.RESEND_FROM_DOMAIN 
         ? `orders@${process.env.RESEND_FROM_DOMAIN}`
         : 'onboarding@resend.dev'
       console.log(`📧 Sending admin notification to: ${adminEmail}`)
       
+      // Check if order has mixed currencies
+      const orderCurrencies = [...new Set(itemsWithStoreId.map(item => item.currency))]
+      const hasMixedCurrencies = orderCurrencies.length > 1
+      const mainCurrency = orderCurrencies[0] || 'USD'
+      
       await resend.emails.send({
-        from: fromEmail,
+        from: `Platform Orders <${adminFromEmail}>`,
+        replyTo: adminEmail,
         to: adminEmail,
-        subject: `New Order #${order.id} - Platform Admin Notification`,
+        subject: `📊 Platform Order #${order.id} - ${storeIds.length} Store(s)`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">New Order Received!</h2>
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>Order Details</h3>
-              <p><strong>Order ID:</strong> ${order.id}</p>
-              <p><strong>Total:</strong> $${parseFloat(total).toFixed(2)}</p>
-              <p><strong>Status:</strong> pending</p>
-              <p><strong>Stores Involved:</strong> ${storeIds.length}</p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+              <!-- Header -->
+              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">📊 Platform Order</h1>
+                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Admin Notification</p>
+              </div>
+              
+              <!-- Content -->
+              <div style="padding: 30px;">
+                <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Order Summary</h2>
+                  <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #d97706; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'Mixed Currencies' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PENDING</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Stores Involved:</strong> ${storeIds.length}</p>
             </div>
             
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>Customer Information</h3>
-              <p><strong>Name:</strong> ${customerName}</p>
-              <p><strong>Email:</strong> ${customer.email}</p>
-              ${customer.phone ? `<p><strong>Phone:</strong> ${customer.phone}</p>` : ''}
-              <p><strong>Address:</strong> ${customerAddress}</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">👤 Customer Information</h2>
+                  <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${customerName}</p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Email:</strong> <a href="mailto:${customer.email}" style="color: #f59e0b;">${customer.email}</a></p>
+                  ${customer.phone ? `<p style="margin: 8px 0; color: #555;"><strong>Phone:</strong> ${customer.phone}</p>` : ''}
+                  <p style="margin: 8px 0; color: #555;"><strong>Address:</strong> ${customerAddress}</p>
             </div>
             
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>All Items Ordered</h3>
-              ${items.map((item: any) => `
-                <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
-                  <p><strong>${item.name}</strong></p>
-                  <p>Price: $${parseFloat(item.price).toFixed(2)} × ${item.quantity} = $${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 All Items Ordered</h2>
+                  ${itemsWithStoreId.map((item: any) => `
+                    <div style="border-bottom: 1px solid #e5e7eb; padding: 12px 0;">
+                      <p style="margin: 0 0 8px 0; color: #333; font-weight: bold;">${item.productName}</p>
+                      <p style="margin: 0; color: #666; font-size: 14px;">
+                        ${formatPrice(item.price, item.currency)} × ${item.quantity} = <strong>${formatPrice(item.price * item.quantity, item.currency)}</strong>
+                      </p>
                 </div>
               `).join('')}
             </div>
             
-            <p>Individual store owners have been notified of their respective items.</p>
-            <p>Best regards,<br>E-commerce System</p>
+                <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                  <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                    ℹ️ <strong>Note:</strong> Individual store owners have been notified of their respective items.
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Footer -->
+              <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">E-commerce Platform</p>
+                <p style="margin: 0; color: #999; font-size: 12px;">Automated Admin Notification</p>
+              </div>
           </div>
+          </body>
+          </html>
+        `,
+        text: `
+Platform Order Notification
+
+Order Summary:
+- Order ID: #${order.id}
+- Total: ${hasMixedCurrencies ? 'Mixed Currencies' : formatPrice(parseFloat(total), mainCurrency)}
+- Status: pending
+- Stores Involved: ${storeIds.length}
+
+Customer Information:
+- Name: ${customerName}
+- Email: ${customer.email}
+${customer.phone ? `- Phone: ${customer.phone}` : ''}
+- Address: ${customerAddress}
+
+All Items Ordered:
+${itemsWithStoreId.map((item: any) => `- ${item.productName}: ${formatPrice(item.price, item.currency)} × ${item.quantity} = ${formatPrice(item.price * item.quantity, item.currency)}`).join('\n')}
+
+Note: Individual store owners have been notified of their respective items.
         `,
       })
 
@@ -209,43 +327,101 @@ export async function POST(request: NextRequest) {
         ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
         : 'onboarding@resend.dev'
       
+      const siteName = process.env.RESEND_FROM_DOMAIN 
+        ? process.env.RESEND_FROM_DOMAIN.replace(/\.[^.]+$/, '').split('.').pop()?.toUpperCase()
+        : 'E-commerce'
+      
       await resend.emails.send({
-        from: customerFromEmail,
+        from: `${siteName} <${customerFromEmail}>`,
+        replyTo: adminEmail,
         to: customer.email,
-        subject: `Order Confirmation #${order.id}`,
+        subject: `✅ Order Confirmation #${order.id}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">Thank you for your order!</h2>
-            <p>Dear ${customerName},</p>
-            <p>We've received your order and our sellers will process it shortly. Here are your order details:</p>
-            
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>Order Summary</h3>
-              <p><strong>Order ID:</strong> ${order.id}</p>
-              <p><strong>Total:</strong> $${parseFloat(total).toFixed(2)}</p>
-              <p><strong>Status:</strong> pending</p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+              <!-- Header -->
+              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✅ Order Confirmed!</h1>
+                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Thank you for your purchase</p>
+              </div>
+              
+              <!-- Content -->
+              <div style="padding: 30px;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6;">Dear <strong>${customerName}</strong>,</p>
+                <p style="color: #555; font-size: 15px; line-height: 1.6;">We've received your order and our sellers will process it shortly. Here are your order details:</p>
+                
+                <div style="background: #d1fae5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Order Summary</h2>
+                  <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #059669; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PROCESSING</span></p>
             </div>
             
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>Items Ordered</h3>
-              ${items.map((item: any) => `
-                <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
-                  <p><strong>${item.name}</strong></p>
-                  <p>Price: $${parseFloat(item.price).toFixed(2)} × ${item.quantity} = $${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 Items Ordered</h2>
+                  ${itemsWithStoreId.map((item: any) => `
+                    <div style="border-bottom: 1px solid #e5e7eb; padding: 12px 0;">
+                      <p style="margin: 0 0 8px 0; color: #333; font-weight: bold;">${item.productName}</p>
+                      <p style="margin: 0; color: #666; font-size: 14px;">
+                        ${formatPrice(item.price, item.currency)} × ${item.quantity} = <strong>${formatPrice(item.price * item.quantity, item.currency)}</strong>
+                      </p>
                 </div>
               `).join('')}
             </div>
             
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3>Shipping Address</h3>
-              <p>${customerAddress}</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📍 Shipping Address</h2>
+                  <p style="margin: 0; color: #555; line-height: 1.6;">${customerAddress}</p>
             </div>
             
-            <p>We'll send you updates about your order status. If you have any questions, please contact us.</p>
-            
-            <p>Thank you for your purchase!</p>
-            <p>Best regards,<br>The E-commerce Team</p>
+                <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                  <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                    💡 <strong>What's Next?</strong> We'll send you updates about your order status. If you have any questions, please reply to this email.
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Footer -->
+              <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0 0 10px 0; color: #333; font-weight: bold; font-size: 16px;">Thank you for your purchase! 🎉</p>
+                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">Best regards,</p>
+                <p style="margin: 0; color: #333; font-weight: bold;">The ${siteName} Team</p>
+              </div>
           </div>
+          </body>
+          </html>
+        `,
+        text: `
+Order Confirmation
+
+Dear ${customerName},
+
+We've received your order and our sellers will process it shortly.
+
+Order Summary:
+- Order ID: #${order.id}
+- Total: ${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}
+- Status: Processing
+
+Items Ordered:
+${itemsWithStoreId.map((item: any) => `- ${item.productName}: ${formatPrice(item.price, item.currency)} × ${item.quantity} = ${formatPrice(item.price * item.quantity, item.currency)}`).join('\n')}
+
+Shipping Address:
+${customerAddress}
+
+What's Next?
+We'll send you updates about your order status. If you have any questions, please reply to this email.
+
+Thank you for your purchase!
+
+Best regards,
+The ${siteName} Team
         `,
       })
 
