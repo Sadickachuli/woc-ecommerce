@@ -89,6 +89,11 @@ export default function BecomeSellerPage() {
         duration: 6000,
         icon: '🎉',
       })
+      
+      // Redirect to dashboard after showing success message
+      setTimeout(() => {
+        router.push('/admin/dashboard')
+      }, 5000)
     } catch (error) {
       console.error('Error submitting application:', error)
       toast.error('Failed to submit application')
@@ -198,23 +203,14 @@ export default function BecomeSellerPage() {
               </ul>
             </div>
 
-            <div className="text-center space-y-3">
+            <div className="text-center">
               <p className="text-sm text-gray-600 mb-4">
-                We'll notify you via email once your application is approved.
+                Redirecting to your dashboard in a moment...
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button
-                  onClick={() => router.push('/products')}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Browse Products
-                </button>
-                <button
-                  onClick={() => router.push('/')}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Go to Home
-                </button>
+              <div className="animate-pulse">
+                <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 rounded-full animate-[loading_5s_ease-in-out]"></div>
+                </div>
               </div>
             </div>
           </div>
