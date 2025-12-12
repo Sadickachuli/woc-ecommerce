@@ -167,23 +167,19 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            {isLoading ? (
-              "Loading products..."
-            ) : (
-              <>
-                Showing {filteredProducts.length} of {currentProducts.length} products
-                {searchTerm && (
-                  <span className="ml-2 text-primary-600 font-medium">
-                    matching "{searchTerm}"
-                  </span>
-                )}
-              </>
-            )}
-          </p>
-        </div>
+        {/* Results Count - Only show after loading */}
+        {!isLoading && (
+          <div className="mb-6">
+            <p className="text-gray-600">
+              Showing {filteredProducts.length} of {currentProducts.length} products
+              {searchTerm && (
+                <span className="ml-2 text-primary-600 font-medium">
+                  matching "{searchTerm}"
+                </span>
+              )}
+            </p>
+          </div>
+        )}
 
         {/* Products Grid */}
         {isLoading ? (
