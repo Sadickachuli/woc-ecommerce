@@ -80,7 +80,7 @@ export default function ContactPage() {
 
             {submitStatus === 'error' && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800">Sorry, there was an error sending your message. Please try again or contact us directly at wingsofchangeghana@gmail.com.</p>
+                <p className="text-red-800">Sorry, there was an error sending your message. Please try again or contact us directly at xentofwocghana@gmail.com.</p>
               </div>
             )}
 
@@ -184,7 +184,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">wingsofchangeghana@gmail.com</p>
+                    <p className="text-gray-600">xentofwocghana@gmail.com</p>
                     <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                   </div>
                 </div>

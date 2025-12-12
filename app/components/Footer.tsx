@@ -18,7 +18,7 @@ export default function Footer() {
               eco-friendly products that don't compromise on quality or style.
             </p>
             <div className="flex space-x-4">
-              <a href="mailto:wingsofchangeghana@gmail.com" className="text-gray-400 hover:text-white transition-colors">
+              <a href="mailto:xentofwocghana@gmail.com" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">Email</span>
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
@@ -65,8 +65,8 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
             <ul className="space-y-2 text-gray-300">
               <li>
-                            <a href="mailto:wingsofchangeghana@gmail.com" className="hover:text-white transition-colors">
-              wingsofchangeghana@gmail.com
+                            <a href="mailto:xentofwocghana@gmail.com" className="hover:text-white transition-colors">
+                            xentofwocghana@gmail.com
                 </a>
               </li>
               <li>

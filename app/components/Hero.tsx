@@ -45,15 +45,15 @@ export default function Hero() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="text-3xl font-bold mb-2">100+</div>
+            <div className="text-3xl font-bold mb-2">10+</div>
             <div className="text-primary-200">Sustainable Products</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold mb-2">50+</div>
+            <div className="text-3xl font-bold mb-2">5+</div>
             <div className="text-primary-200">Local Artisans</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold mb-2">1000+</div>
+            <div className="text-3xl font-bold mb-2">100+</div>
             <div className="text-primary-200">Happy Customers</div>
           </div>
         </div>
