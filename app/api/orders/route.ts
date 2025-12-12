@@ -439,44 +439,16 @@ The ${siteName} Team
         `,
       }))
 
-      // Send emails in batches to avoid rate limits
-      console.log(`🚀 Sending ${emailPromises.length} emails in batches to avoid rate limits...`)
+      // Send all emails in parallel (no batching, no delays)
+      console.log(`🚀 Sending ${emailPromises.length} emails in parallel...`)
+      console.log(`📧 Recipients:`)
+      emailLabels.forEach(label => console.log(`   - ${label}`))
       
       const startTime = Date.now()
-      const BATCH_SIZE = 2  // Send 2 emails at a time
-      const BATCH_DELAY_MS = 1000  // Wait 1 second between batches
       
-      const results: PromiseSettledResult<any>[] = []
-      
-      // Send emails in batches
-      for (let i = 0; i < emailPromises.length; i += BATCH_SIZE) {
-        const batch = emailPromises.slice(i, i + BATCH_SIZE)
-        const batchLabels = emailLabels.slice(i, i + BATCH_SIZE)
-        
-        console.log(`📤 Batch ${Math.floor(i / BATCH_SIZE) + 1}: Sending ${batch.length} email(s)...`)
-        batchLabels.forEach(label => console.log(`   - ${label}`))
-        
-        const batchResults = await Promise.allSettled(batch)
-        results.push(...batchResults)
-        
-        // Log immediate results for this batch with detailed Resend response
-        batchResults.forEach((result, idx) => {
-          if (result.status === 'fulfilled') {
-            console.log(`   ✅ ${batchLabels[idx]}: Sent`)
-            // Log the actual Resend response
-            console.log(`      Resend Response:`, JSON.stringify(result.value, null, 2))
-          } else {
-            console.error(`   ❌ ${batchLabels[idx]}: FAILED`)
-            console.error(`      Error:`, result.reason)
-          }
-        })
-        
-        // Wait before next batch (unless this is the last batch)
-        if (i + BATCH_SIZE < emailPromises.length) {
-          console.log(`   ⏳ Waiting ${BATCH_DELAY_MS}ms before next batch...`)
-          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS))
-        }
-      }
+      // Send ALL emails at once using Promise.allSettled
+      // If one fails, others still proceed
+      const results = await Promise.allSettled(emailPromises)
       
       const endTime = Date.now()
       const duration = ((endTime - startTime) / 1000).toFixed(2)
@@ -485,25 +457,49 @@ The ${siteName} Team
       const successCount = results.filter(r => r.status === 'fulfilled').length
       const failureCount = results.filter(r => r.status === 'rejected').length
       
-      if (failureCount > 0) {
-        console.warn(`⚠️ ${successCount}/${emailPromises.length} emails sent successfully in ${duration}s`)
-        console.warn(`❌ ${failureCount} email(s) failed:`)
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            console.error(`  ❌ ${emailLabels[index]}: ${result.reason}`)
-          } else {
-            console.log(`  ✅ ${emailLabels[index]}: Sent successfully`)
+      console.log(`\n📊 Email Results (${duration}s):`)
+      
+      // Log each email result with detailed info
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          console.log(`✅ ${emailLabels[index]}`)
+          // Check if Resend returned an error within a successful promise
+          const response = result.value
+          if (response?.error) {
+            console.warn(`   ⚠️ Resend Error: ${response.error.message || JSON.stringify(response.error)}`)
+          } else if (response?.data?.id) {
+            console.log(`   📧 Email ID: ${response.data.id}`)
           }
-        })
+        } else {
+          console.error(`❌ ${emailLabels[index]}`)
+          console.error(`   Error: ${result.reason}`)
+        }
+      })
+      
+      // Summary
+      if (failureCount > 0) {
+        console.warn(`\n⚠️ SUMMARY: ${successCount}/${emailPromises.length} emails sent (${failureCount} failed)`)
+        console.warn(`⚠️ Some emails may have been rate limited. Consider upgrading to Resend Pro.`)
       } else {
-        console.log(`✅ All ${emailPromises.length} order emails sent successfully in ${duration}s!`)
-        console.log(`📧 Email breakdown:`)
-        results.forEach((result, index) => {
-          console.log(`  ✅ ${emailLabels[index]}`)
-        })
+        console.log(`\n✅ SUCCESS: All ${emailPromises.length} emails sent in ${duration}s!`)
       }
       
-      console.log(`📧 Total: ${storeIds.length} seller(s) + order confirmation (to customer & admin) = ${emailPromises.length} emails`)
+      console.log(`📧 Total: ${storeIds.length} seller(s) + order confirmation (to customer & admin)`)
+      
+      // If any critical emails failed, log a warning
+      const adminFailed = results.some((result, index) => 
+        result.status === 'rejected' && emailLabels[index].includes('Admin')
+      )
+      const customerFailed = results.some((result, index) => 
+        result.status === 'rejected' && emailLabels[index].includes('Customer')
+      )
+      
+      if (adminFailed) {
+        console.error(`🚨 CRITICAL: Admin email failed! Admin will not be notified.`)
+      }
+      if (customerFailed) {
+        console.error(`🚨 CRITICAL: Customer email failed! Customer will not receive confirmation.`)
+      }
     } catch (emailError) {
       console.error('❌ Failed to send order emails:', emailError)
       if (emailError instanceof Error) {
