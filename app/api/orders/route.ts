@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
           replyTo: replyTo,
         to: sellerEmail,
           subject: `🛍️ New Order #${order.id} - ${store.storeName}`,
-          html: `
+        html: `
             <!DOCTYPE html>
             <html>
             <head>
@@ -166,16 +166,16 @@ export async function POST(request: NextRequest) {
                     <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
                     <p style="margin: 8px 0; color: #555;"><strong>Your Store Total:</strong> <span style="color: #667eea; font-size: 18px; font-weight: bold;">${formatPrice(storeTotal, storeCurrency)}</span></p>
                     <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PENDING</span></p>
-                  </div>
-                  
+            </div>
+            
                   <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">👤 Customer Information</h2>
                     <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${customerName}</p>
                     <p style="margin: 8px 0; color: #555;"><strong>Email:</strong> <a href="mailto:${customer.email}" style="color: #667eea;">${customer.email}</a></p>
                     ${customer.phone ? `<p style="margin: 8px 0; color: #555;"><strong>Phone:</strong> ${customer.phone}</p>` : ''}
                     <p style="margin: 8px 0; color: #555;"><strong>Address:</strong> ${customerAddress}</p>
-                  </div>
-                  
+            </div>
+            
                   <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 Items from Your Store</h2>
                     ${storeItems.map((item: any) => `
@@ -184,10 +184,10 @@ export async function POST(request: NextRequest) {
                         <p style="margin: 0; color: #666; font-size: 14px;">
                           ${formatPrice(item.price, item.currency)} × ${item.quantity} = <strong>${formatPrice(item.price * item.quantity, item.currency)}</strong>
                         </p>
-                      </div>
-                    `).join('')}
-                  </div>
-                  
+                </div>
+              `).join('')}
+            </div>
+            
                   <div style="background: #e0e7ff; padding: 15px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #4338ca; font-size: 14px;">
                       ℹ️ <strong>Next Steps:</strong> Please process this order and contact the customer if needed.
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
                   <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">Best regards,</p>
                   <p style="margin: 0; color: #333; font-weight: bold;">E-commerce Platform</p>
                 </div>
-              </div>
+          </div>
             </body>
             </html>
           `,
@@ -229,25 +229,32 @@ E-commerce Platform
         }))
       }
 
-      // Prepare admin email
+      // Prepare common data for customer and admin emails
       const adminEmail = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
-      const adminFromEmail = process.env.RESEND_FROM_DOMAIN 
-        ? `orders@${process.env.RESEND_FROM_DOMAIN}`
-        : 'onboarding@resend.dev'
-      console.log(`📧 Queuing admin notification to: ${adminEmail}`)
       
       // Check if order has mixed currencies
       const orderCurrencies = [...new Set(itemsWithStoreId.map(item => item.currency))]
       const hasMixedCurrencies = orderCurrencies.length > 1
       const mainCurrency = orderCurrencies[0] || 'USD'
+
+      // Prepare customer/admin order confirmation email (send same email to both)
+      console.log(`📧 Queuing order confirmation to customer: ${customer.email}`)
+      console.log(`📧 Queuing order confirmation to admin: ${adminEmail}`)
+      const customerFromEmail = process.env.RESEND_FROM_DOMAIN 
+        ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
+        : 'onboarding@resend.dev'
       
-      // Add admin email promise to array (don't await yet)
-      emailLabels.push(`Admin: ${adminEmail}`)
+      const siteName = process.env.RESEND_FROM_DOMAIN 
+        ? process.env.RESEND_FROM_DOMAIN.replace(/\.[^.]+$/, '').split('.').pop()?.toUpperCase()
+        : 'E-commerce'
+      
+      // Send order confirmation to CUSTOMER
+      emailLabels.push(`Customer: ${customer.email}`)
       emailPromises.push(resend.emails.send({
-        from: `Platform Orders <${adminFromEmail}>`,
-        // Don't set replyTo for admin email (can't reply to yourself)
-        to: adminEmail,
-        subject: `📊 Platform Order #${order.id} - ${storeIds.length} Store(s)`,
+        from: `${siteName} <${customerFromEmail}>`,
+        replyTo: adminEmail,
+        to: customer.email,
+        subject: `✅ Order Confirmation #${order.id}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -258,31 +265,25 @@ E-commerce Platform
           <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">📊 Platform Order</h1>
-                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Admin Notification</p>
+              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✅ Order Confirmed!</h1>
+                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Thank you for your purchase</p>
               </div>
               
               <!-- Content -->
               <div style="padding: 30px;">
-                <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6;">Dear <strong>${customerName}</strong>,</p>
+                <p style="color: #555; font-size: 15px; line-height: 1.6;">We've received your order and our sellers will process it shortly. Here are your order details:</p>
+                
+                <div style="background: #d1fae5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
                   <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Order Summary</h2>
                   <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #d97706; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'Mixed Currencies' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PENDING</span></p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Stores Involved:</strong> ${storeIds.length}</p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #059669; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PROCESSING</span></p>
             </div>
             
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">👤 Customer Information</h2>
-                  <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${customerName}</p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Email:</strong> <a href="mailto:${customer.email}" style="color: #f59e0b;">${customer.email}</a></p>
-                  ${customer.phone ? `<p style="margin: 8px 0; color: #555;"><strong>Phone:</strong> ${customer.phone}</p>` : ''}
-                  <p style="margin: 8px 0; color: #555;"><strong>Address:</strong> ${customerAddress}</p>
-            </div>
-            
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 All Items Ordered</h2>
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 Items Ordered</h2>
                   ${itemsWithStoreId.map((item: any) => `
                     <div style="border-bottom: 1px solid #e5e7eb; padding: 12px 0;">
                       <p style="margin: 0 0 8px 0; color: #333; font-weight: bold;">${item.productName}</p>
@@ -293,61 +294,62 @@ E-commerce Platform
               `).join('')}
             </div>
             
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📍 Shipping Address</h2>
+                  <p style="margin: 0; color: #555; line-height: 1.6;">${customerAddress}</p>
+            </div>
+            
                 <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-top: 20px;">
                   <p style="margin: 0; color: #1e40af; font-size: 14px;">
-                    ℹ️ <strong>Note:</strong> Individual store owners have been notified of their respective items.
+                    💡 <strong>What's Next?</strong> We'll send you updates about your order status. If you have any questions, please reply to this email.
                   </p>
                 </div>
               </div>
               
               <!-- Footer -->
               <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">E-commerce Platform</p>
-                <p style="margin: 0; color: #999; font-size: 12px;">Automated Admin Notification</p>
+                <p style="margin: 0 0 10px 0; color: #333; font-weight: bold; font-size: 16px;">Thank you for your purchase! 🎉</p>
+                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">Best regards,</p>
+                <p style="margin: 0; color: #333; font-weight: bold;">The ${siteName} Team</p>
               </div>
           </div>
           </body>
           </html>
         `,
         text: `
-Platform Order Notification
+Order Confirmation
+
+Dear ${customerName},
+
+We've received your order and our sellers will process it shortly.
 
 Order Summary:
 - Order ID: #${order.id}
-- Total: ${hasMixedCurrencies ? 'Mixed Currencies' : formatPrice(parseFloat(total), mainCurrency)}
-- Status: pending
-- Stores Involved: ${storeIds.length}
+- Total: ${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}
+- Status: Processing
 
-Customer Information:
-- Name: ${customerName}
-- Email: ${customer.email}
-${customer.phone ? `- Phone: ${customer.phone}` : ''}
-- Address: ${customerAddress}
-
-All Items Ordered:
+Items Ordered:
 ${itemsWithStoreId.map((item: any) => `- ${item.productName}: ${formatPrice(item.price, item.currency)} × ${item.quantity} = ${formatPrice(item.price * item.quantity, item.currency)}`).join('\n')}
 
-Note: Individual store owners have been notified of their respective items.
+Shipping Address:
+${customerAddress}
+
+What's Next?
+We'll send you updates about your order status. If you have any questions, please reply to this email.
+
+Thank you for your purchase!
+
+Best regards,
+The ${siteName} Team
         `,
       }))
 
-      // Prepare customer email
-      console.log(`📧 Queuing order confirmation to customer: ${customer.email}`)
-      const customerFromEmail = process.env.RESEND_FROM_DOMAIN 
-        ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
-        : 'onboarding@resend.dev'
-      
-      const siteName = process.env.RESEND_FROM_DOMAIN 
-        ? process.env.RESEND_FROM_DOMAIN.replace(/\.[^.]+$/, '').split('.').pop()?.toUpperCase()
-        : 'E-commerce'
-      
-      // Add customer email promise to array (don't await yet)
-      emailLabels.push(`Customer: ${customer.email}`)
+      // Send SAME order confirmation to ADMIN (admin sees what customer sees)
+      emailLabels.push(`Admin: ${adminEmail}`)
       emailPromises.push(resend.emails.send({
         from: `${siteName} <${customerFromEmail}>`,
-        replyTo: adminEmail,
-        to: customer.email,
-        subject: `✅ Order Confirmation #${order.id}`,
+        to: adminEmail,
+        subject: `✅ Order Confirmation #${order.id} [ADMIN COPY]`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -501,7 +503,7 @@ The ${siteName} Team
         })
       }
       
-      console.log(`📧 Total: ${storeIds.length} seller(s), 1 admin, 1 customer = ${emailPromises.length} emails`)
+      console.log(`📧 Total: ${storeIds.length} seller(s) + order confirmation (to customer & admin) = ${emailPromises.length} emails`)
     } catch (emailError) {
       console.error('❌ Failed to send order emails:', emailError)
       if (emailError instanceof Error) {
