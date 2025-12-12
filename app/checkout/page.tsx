@@ -139,27 +139,27 @@ export default function CheckoutPage() {
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Order Confirmed!</h1>
             <p className="text-gray-600 mb-4">
-              Thank you for your purchase. We've sent a confirmation email to your inbox.
+              Thank you for your purchase. Your order has been received successfully.
             </p>
             
-            {/* Spam Warning - Prominent */}
-            <div className="bg-yellow-50 border-4 border-yellow-500 rounded-xl p-6 mb-8 shadow-lg animate-pulse-slow">
+            {/* Order Info */}
+            <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 mb-8">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="text-lg font-bold text-yellow-900 mb-2">
-                    ⚠️ IMPORTANT: Check Your Email!
+                  <h3 className="text-lg font-bold text-green-900 mb-2">
+                    ✅ Order Successfully Placed!
                   </h3>
-                  <p className="text-base text-yellow-800 leading-relaxed font-medium mb-2">
-                    We've sent your order confirmation to <strong className="text-yellow-900">{formData.email}</strong>
+                  <p className="text-base text-green-800 leading-relaxed font-medium mb-2">
+                    Your order has been confirmed and our sellers will process it shortly.
                   </p>
-                  <div className="bg-yellow-100 border-l-4 border-yellow-600 p-3 rounded">
-                    <p className="text-sm text-yellow-900 leading-relaxed">
-                      📧 <strong>The email may be in your SPAM or JUNK folder!</strong> Please check there first and mark it as "Not Spam" to receive future order updates.
+                  <div className="bg-green-100 border-l-4 border-green-600 p-3 rounded">
+                    <p className="text-sm text-green-900 leading-relaxed">
+                      📦 <strong>The sellers will contact you directly</strong> regarding delivery and payment details.
                     </p>
                   </div>
                 </div>
