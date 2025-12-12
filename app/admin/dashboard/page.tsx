@@ -418,43 +418,45 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Navigation Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-8">
-            {[
-              { id: 'overview', label: 'Overview', icon: Eye },
-              { id: 'products', label: 'Products', icon: Package },
-              ...(userRole === 'admin' ? [
-              { id: 'orders', label: 'Orders', icon: ShoppingCart },
-                { id: 'sellers', label: 'Pending Sellers', icon: Users }
-              ] : [])
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <tab.icon className="w-5 h-5" />
-                <span>{tab.label}</span>
-                {tab.id === 'sellers' && pendingStores.length > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    {pendingStores.length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
+        <div className="mb-6 sm:mb-8 -mx-4 sm:mx-0 px-4 sm:px-0">
+          <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <nav className="flex space-x-4 sm:space-x-8 min-w-max sm:min-w-0">
+              {[
+                { id: 'overview', label: 'Overview', icon: Eye },
+                { id: 'products', label: 'Products', icon: Package },
+                ...(userRole === 'admin' ? [
+                { id: 'orders', label: 'Orders', icon: ShoppingCart },
+                  { id: 'sellers', label: 'Sellers', icon: Users }
+                ] : [])
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center space-x-1.5 sm:space-x-2 py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span>{tab.label}</span>
+                  {tab.id === 'sellers' && pendingStores.length > 0 && (
+                    <span className="ml-1 sm:ml-2 bg-red-500 text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                      {pendingStores.length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Dashboard Overview</h1>
             
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -544,8 +546,8 @@ export default function AdminDashboard() {
         {/* Products Tab */}
         {activeTab === 'products' && (
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Products Management</h1>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Products Management</h1>
               {userRole === 'seller' && userStore?.status === 'verified' && (
                 <button
                   onClick={() => setShowAddProduct(true)}
@@ -645,7 +647,7 @@ export default function AdminDashboard() {
         {/* Orders Tab (Admin only) */}
         {activeTab === 'orders' && userRole === 'admin' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Orders Management</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Orders Management</h1>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="overflow-x-auto">
@@ -729,7 +731,7 @@ export default function AdminDashboard() {
         {/* Pending Sellers Tab (Admin only) */}
         {activeTab === 'sellers' && userRole === 'admin' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Pending Seller Applications</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Pending Seller Applications</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pendingStores.map((store) => (
