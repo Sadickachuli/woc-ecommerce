@@ -27,6 +27,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     console.log('POST /api/orders - Creating new order')
+    
+    // Log environment configuration (for debugging)
+    console.log('🔍 Environment Check:', {
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      resendKeyPrefix: process.env.RESEND_API_KEY?.substring(0, 8) || 'NOT SET',
+      adminEmail: process.env.ADMIN_EMAIL || 'NOT SET',
+      fromDomain: process.env.RESEND_FROM_DOMAIN || 'NOT SET',
+      appUrl: process.env.NEXT_PUBLIC_APP_URL || 'NOT SET',
+    })
+    
     const body = await request.json()
     console.log('Order request body:', body)
     
@@ -98,7 +108,11 @@ export async function POST(request: NextRequest) {
     
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
-      console.warn('⚠️ RESEND_API_KEY not configured - emails will not be sent')
+      console.error('❌ RESEND_API_KEY not configured - emails will NOT be sent!')
+      console.error('⚠️ Add RESEND_API_KEY to environment variables and redeploy')
+      // Don't throw error, allow order to complete
+    } else {
+      console.log('✅ Resend API key is configured')
     }
 
     try {
