@@ -32,6 +32,7 @@ import {
   updateProduct,
   deleteProduct,
   getAllOrders,
+  getAllStores,
   Store,
   Product,
   Order
@@ -54,6 +55,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([])
   const [pendingStores, setPendingStores] = useState<Store[]>([])
   const [selectedStore, setSelectedStore] = useState<Store | null>(null)
+  const [allStores, setAllStores] = useState<Store[]>([]) // For currency lookup
 
   // Product form state
   const [productForm, setProductForm] = useState({
@@ -105,14 +107,16 @@ export default function AdminDashboard() {
     const loadData = async () => {
       if (userRole === 'admin') {
         // Load all data for admin
-        const [allOrders, allProducts, pending] = await Promise.all([
+        const [allOrders, allProducts, pending, stores] = await Promise.all([
           getAllOrders(),
           getProductsFromVerifiedStores(),
-          getPendingStores()
+          getPendingStores(),
+          getAllStores()
         ])
         setOrders(allOrders)
         setProducts(allProducts)
         setPendingStores(pending)
+        setAllStores(stores)
       } else if (userRole === 'seller' && userStore) {
         // Load seller's products
         const storeProducts = await getProductsByStore(userStore.id!)
@@ -597,7 +601,16 @@ export default function AdminDashboard() {
                           {product.category}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${product.price.toFixed(2)}
+                          {(() => {
+                            // If this is a seller dashboard, use their store's currency
+                            if (userStore?.currency) {
+                              return formatPrice(product.price, userStore.currency)
+                            }
+                            // For admin, find the product's store currency
+                            const productStore = allStores.find(s => s.id === product.storeId)
+                            const currency = productStore?.currency || 'USD'
+                            return formatPrice(product.price, currency)
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {product.stock}
