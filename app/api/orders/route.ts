@@ -245,7 +245,7 @@ E-commerce Platform
       emailLabels.push(`Admin: ${adminEmail}`)
       emailPromises.push(resend.emails.send({
         from: `Platform Orders <${adminFromEmail}>`,
-        replyTo: adminEmail,
+        // Don't set replyTo for admin email (can't reply to yourself)
         to: adminEmail,
         subject: `📊 Platform Order #${order.id} - ${storeIds.length} Store(s)`,
         html: `
@@ -457,12 +457,15 @@ The ${siteName} Team
         const batchResults = await Promise.allSettled(batch)
         results.push(...batchResults)
         
-        // Log immediate results for this batch
+        // Log immediate results for this batch with detailed Resend response
         batchResults.forEach((result, idx) => {
           if (result.status === 'fulfilled') {
             console.log(`   ✅ ${batchLabels[idx]}: Sent`)
+            // Log the actual Resend response
+            console.log(`      Resend Response:`, JSON.stringify(result.value, null, 2))
           } else {
-            console.error(`   ❌ ${batchLabels[idx]}: ${result.reason}`)
+            console.error(`   ❌ ${batchLabels[idx]}: FAILED`)
+            console.error(`      Error:`, result.reason)
           }
         })
         
