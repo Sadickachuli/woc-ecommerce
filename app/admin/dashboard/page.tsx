@@ -386,33 +386,55 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">WC</span>
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            {/* Left: Logo & Title */}
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs sm:text-sm">WC</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                {userRole === 'admin' ? 'Admin Dashboard' : `${userStore?.storeName || 'Seller'} Dashboard`}
+              <span className="text-sm sm:text-xl font-bold text-gray-900 truncate">
+                {userRole === 'admin' ? (
+                  <>
+                    <span className="hidden sm:inline">Admin Dashboard</span>
+                    <span className="sm:hidden">Admin</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">{userStore?.storeName || 'Seller'} Dashboard</span>
+                    <span className="sm:hidden">{userStore?.storeName || 'Seller'}</span>
+                  </>
+                )}
               </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user.email}</span>
+
+            {/* Right: Email & Buttons */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              {/* Email - Hidden on mobile */}
+              <span className="hidden lg:block text-sm text-gray-600 truncate max-w-[150px] xl:max-w-none">
+                {user.email}
+              </span>
+
+              {/* Manage Platform Button - Admin Only */}
               {userRole === 'admin' && (
                 <Link
                   href="/admin/manage"
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  title="Manage Platform"
                 >
-                  <UserCog className="w-5 h-5" />
-                  <span>Manage Platform</span>
+                  <UserCog className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="hidden md:inline text-sm">Manage</span>
                 </Link>
               )}
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 sm:gap-2 text-gray-700 hover:text-red-600 transition-colors p-1.5 sm:p-0"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="hidden sm:inline text-sm">Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -505,12 +527,12 @@ export default function AdminDashboard() {
 
             {/* Store Info for Sellers */}
             {userRole === 'seller' && userStore && (
-              <div className="bg-white rounded-lg shadow p-6 mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Store Information</h2>
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 sm:mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Store Information</h2>
                   <Link
                     href="/admin/store-settings"
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     <Palette className="w-4 h-4" />
                     <span>Customize Store</span>
