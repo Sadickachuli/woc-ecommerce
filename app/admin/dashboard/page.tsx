@@ -402,7 +402,7 @@ export default function AdminDashboard() {
                   </>
                 )}
               </span>
-            </div>
+              </div>
 
             {/* Right: Email & Buttons */}
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
@@ -424,14 +424,14 @@ export default function AdminDashboard() {
               )}
 
               {/* Logout Button */}
-              <button
-                onClick={handleLogout}
+            <button
+              onClick={handleLogout}
                 className="flex items-center gap-1 sm:gap-2 text-gray-700 hover:text-red-600 transition-colors p-1.5 sm:p-0"
                 title="Logout"
-              >
+            >
                 <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 <span className="hidden sm:inline text-sm">Logout</span>
-              </button>
+            </button>
             </div>
           </div>
         </div>
@@ -442,33 +442,33 @@ export default function AdminDashboard() {
         <div className="mb-6 sm:mb-8 -mx-4 sm:mx-0 px-4 sm:px-0">
           <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
             <nav className="flex space-x-4 sm:space-x-8 min-w-max sm:min-w-0">
-              {[
-                { id: 'overview', label: 'Overview', icon: Eye },
-                { id: 'products', label: 'Products', icon: Package },
+            {[
+              { id: 'overview', label: 'Overview', icon: Eye },
+              { id: 'products', label: 'Products', icon: Package },
                 ...(userRole === 'admin' ? [
-                { id: 'orders', label: 'Orders', icon: ShoppingCart },
+              { id: 'orders', label: 'Orders', icon: ShoppingCart },
                   { id: 'sellers', label: 'Sellers', icon: Users }
                 ] : [])
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center space-x-1.5 sm:space-x-2 py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors ${
-                    activeTab === tab.id
+                  activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
                   <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span>{tab.label}</span>
+                <span>{tab.label}</span>
                   {tab.id === 'sellers' && pendingStores.length > 0 && (
                     <span className="ml-1 sm:ml-2 bg-red-500 text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                       {pendingStores.length}
                     </span>
                   )}
-                </button>
-              ))}
-            </nav>
+              </button>
+            ))}
+          </nav>
           </div>
         </div>
 
@@ -480,17 +480,17 @@ export default function AdminDashboard() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {userRole === 'admin' && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <ShoppingCart className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                      <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
-                    </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <ShoppingCart className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                    <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
                   </div>
                 </div>
+              </div>
               )}
 
               <div className="bg-white rounded-lg shadow p-6">

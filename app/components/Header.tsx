@@ -55,13 +55,13 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3" onClick={() => handleNavigation('/')}>
             <img 
-              src="/xent-logo.png" 
+              src="/xent-logo.webp" 
               alt="Xent Logo" 
-              className="h-10 w-auto"
+              className="h-12 sm:h-16 lg:h-15 w-auto"
             />
             <span className="text-xl font-bold text-gray-900"></span>
           </Link>
