@@ -19,8 +19,11 @@ export default function ProductCard({ product, currency }: ProductCardProps) {
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
-    addItem(product, currency)
-    toast.success(`${product.name} added to cart!`)
+    const wasAdded = addItem(product, currency)
+    // Only show success toast if item was actually added
+    if (wasAdded) {
+      toast.success(`${product.name} added to cart!`)
+    }
   }
 
   const handleViewDetails = () => {

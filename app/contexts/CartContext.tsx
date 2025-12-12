@@ -23,7 +23,7 @@ type CartAction =
 
 const CartContext = createContext<{
   state: CartState
-  addItem: (product: Product, currency?: string) => void
+  addItem: (product: Product, currency?: string) => boolean
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -99,7 +99,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     total: 0
   })
 
-  const addItem = (product: Product, currency?: string) => {
+  const addItem = (product: Product, currency?: string): boolean => {
     // Check if adding from different store - BLOCK if different
     if (state.items.length > 0) {
       const firstItemStoreId = state.items[0].product.storeId
@@ -129,13 +129,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
           },
         })
         
-        // DO NOT add the item - return without dispatching
-        return
+        // Return false to indicate item was NOT added
+        return false
       }
     }
     
     // Same store or empty cart - allow adding
     dispatch({ type: 'ADD_ITEM', payload: { product, currency } })
+    
+    // Return true to indicate item was added successfully
+    return true
   }
 
   const removeItem = (productId: string) => {
