@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer, ReactNode } from 'react'
 import { Product } from '../types'
+import toast from 'react-hot-toast'
 
 interface CartItem {
   product: Product
@@ -47,7 +48,23 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
         }
       } else {
-        // Add new item with currency
+        // Check if cart has items from a different store
+        if (state.items.length > 0) {
+          const firstItemStoreId = state.items[0].product.storeId
+          const newItemStoreId = product.storeId
+          
+          if (firstItemStoreId !== newItemStoreId) {
+            // Different store - clear cart and add new item
+            console.warn('⚠️ Cart cleared: Can only order from one store at a time')
+            const newItems = [{ product, quantity: 1, currency }]
+            return {
+              items: newItems,
+              total: newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+            }
+          }
+        }
+        
+        // Add new item with currency (same store or empty cart)
         const newItems = [...state.items, { product, quantity: 1, currency }]
         return {
           ...state,
@@ -98,6 +115,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   })
 
   const addItem = (product: Product, currency?: string) => {
+    // Check if adding from different store
+    if (state.items.length > 0) {
+      const firstItemStoreId = state.items[0].product.storeId
+      const newItemStoreId = product.storeId
+      
+      if (firstItemStoreId !== newItemStoreId) {
+        toast.error('Cart cleared: You can only order from one store at a time', {
+          duration: 4000,
+          icon: '🛒',
+        })
+      }
+    }
+    
     dispatch({ type: 'ADD_ITEM', payload: { product, currency } })
   }
 

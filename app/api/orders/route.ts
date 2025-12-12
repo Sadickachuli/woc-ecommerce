@@ -258,25 +258,31 @@ E-commerce Platform
           <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✅ Order Confirmed!</h1>
-                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Thank you for your purchase</p>
+              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">📊 New Platform Order</h1>
+                <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Admin Notification</p>
               </div>
               
               <!-- Content -->
               <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px; line-height: 1.6;">Dear <strong>${customerName}</strong>,</p>
-                <p style="color: #555; font-size: 15px; line-height: 1.6;">We've received your order and our sellers will process it shortly. Here are your order details:</p>
-                
-                <div style="background: #d1fae5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
                   <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Order Summary</h2>
                   <p style="margin: 8px 0; color: #555;"><strong>Order ID:</strong> #${order.id}</p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #059669; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
-                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PROCESSING</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Total:</strong> <span style="color: #d97706; font-size: 18px; font-weight: bold;">${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Status:</strong> <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PENDING</span></p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Stores Involved:</strong> ${storeIds.length}</p>
             </div>
             
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 Items Ordered</h2>
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">👤 Customer Information</h2>
+                  <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${customerName}</p>
+                  <p style="margin: 8px 0; color: #555;"><strong>Email:</strong> <a href="mailto:${customer.email}" style="color: #f59e0b;">${customer.email}</a></p>
+                  ${customer.phone ? `<p style="margin: 8px 0; color: #555;"><strong>Phone:</strong> ${customer.phone}</p>` : ''}
+                  <p style="margin: 8px 0; color: #555;"><strong>Address:</strong> ${customerAddress}</p>
+            </div>
+            
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📦 All Items Ordered</h2>
                   ${itemsWithStoreId.map((item: any) => `
                     <div style="border-bottom: 1px solid #e5e7eb; padding: 12px 0;">
                       <p style="margin: 0 0 8px 0; color: #333; font-weight: bold;">${item.productName}</p>
@@ -287,54 +293,41 @@ E-commerce Platform
               `).join('')}
             </div>
             
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📍 Shipping Address</h2>
-                  <p style="margin: 0; color: #555; line-height: 1.6;">${customerAddress}</p>
-            </div>
-            
                 <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-top: 20px;">
                   <p style="margin: 0; color: #1e40af; font-size: 14px;">
-                    💡 <strong>What's Next?</strong> We'll send you updates about your order status. If you have any questions, please reply to this email.
+                    ℹ️ <strong>Note:</strong> Individual store owners have been notified of their respective items.
                   </p>
                 </div>
-              </div>
-              
+            </div>
+            
               <!-- Footer -->
               <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="margin: 0 0 10px 0; color: #333; font-weight: bold; font-size: 16px;">New Order Notification</p>
                 <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">E-commerce Platform</p>
-                <p style="margin: 0; color: #999; font-size: 12px;">Admin Notification</p>
+                <p style="margin: 0; color: #999; font-size: 12px;">Automated Admin Notification</p>
               </div>
           </div>
           </body>
           </html>
         `,
         text: `
-Order Confirmation
-
-Dear ${customerName},
-
-We've received your order and our sellers will process it shortly.
+Platform Order Notification
 
 Order Summary:
 - Order ID: #${order.id}
 - Total: ${hasMixedCurrencies ? 'See items below' : formatPrice(parseFloat(total), mainCurrency)}
-- Status: Processing
+- Status: pending
+- Stores Involved: ${storeIds.length}
 
-Items Ordered:
+Customer Information:
+- Name: ${customerName}
+- Email: ${customer.email}
+${customer.phone ? `- Phone: ${customer.phone}` : ''}
+- Address: ${customerAddress}
+
+All Items Ordered:
 ${itemsWithStoreId.map((item: any) => `- ${item.productName}: ${formatPrice(item.price, item.currency)} × ${item.quantity} = ${formatPrice(item.price * item.quantity, item.currency)}`).join('\n')}
 
-Shipping Address:
-${customerAddress}
-
-What's Next?
-We'll send you updates about your order status. If you have any questions, please reply to this email.
-
-Thank you for your purchase!
-
-Best regards,
-E-commerce Platform
-(Admin Notification)
+Note: Individual store owners have been notified of their respective items.
         `,
       }))
 
