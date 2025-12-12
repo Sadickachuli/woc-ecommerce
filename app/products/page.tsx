@@ -12,7 +12,6 @@ import Link from 'next/link'
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedStore, setSelectedStore] = useState('all')
   const [currentProducts, setCurrentProducts] = useState<Product[]>([])
   const [stores, setStores] = useState<StoreType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -93,8 +92,7 @@ export default function ProductsPage() {
   const filteredProducts = currentProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStore = selectedStore === 'all' || product.storeId === selectedStore
-    return matchesSearch && matchesStore
+    return matchesSearch
   })
 
   return (
@@ -127,40 +125,17 @@ export default function ProductsPage() {
             Shop by Store
           </h2>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {/* All Stores */}
-            <button
-              onClick={() => setSelectedStore('all')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                selectedStore === 'all'
-                  ? 'border-primary-600 bg-primary-50 text-primary-700'
-                  : 'border-gray-200 bg-white hover:border-primary-300'
-              }`}
-            >
-              <div className="text-center">
-                <Store className="w-6 h-6 mx-auto mb-1" />
-                <p className="text-sm font-medium">All Stores</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {currentProducts.length} products
-                </p>
-              </div>
-            </button>
-
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {/* Individual Stores */}
             {stores.map((store) => {
               const storeProductCount = currentProducts.filter(p => p.storeId === store.id).length
               const primaryColor = store.branding?.primaryColor || '#3b82f6'
               
               return (
-                <button
+                <Link
                   key={store.id}
-                  onClick={() => setSelectedStore(store.id!)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    selectedStore === store.id
-                      ? 'bg-blue-50'
-                      : 'border-gray-200 bg-white hover:border-blue-300'
-                  }`}
-                  style={selectedStore === store.id ? { borderColor: primaryColor } : {}}
+                  href={`/store/${store.id}`}
+                  className="p-4 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
                 >
                   <div className="text-center">
                     {store.branding?.logo ? (
@@ -186,23 +161,10 @@ export default function ProductsPage() {
                       {storeProductCount} {storeProductCount === 1 ? 'product' : 'products'}
                     </p>
                   </div>
-                </button>
+                </Link>
               )
             })}
           </div>
-
-          {/* View Store Page Link */}
-          {selectedStore !== 'all' && (
-            <div className="mt-4">
-              <Link
-                href={`/store/${selectedStore}`}
-                className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium"
-              >
-                <Store className="w-4 h-4 mr-1" />
-                View full store page →
-              </Link>
-            </div>
-          )}
         </div>
 
         {/* Results Count */}
@@ -213,9 +175,9 @@ export default function ProductsPage() {
             ) : (
               <>
                 Showing {filteredProducts.length} of {currentProducts.length} products
-                {selectedStore !== 'all' && stores.find(s => s.id === selectedStore) && (
+                {searchTerm && (
                   <span className="ml-2 text-primary-600 font-medium">
-                    from {stores.find(s => s.id === selectedStore)?.storeName}
+                    matching "{searchTerm}"
                   </span>
                 )}
               </>
@@ -240,19 +202,9 @@ export default function ProductsPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-600 mb-4">
               {searchTerm
-                ? 'Try adjusting your search.'
-                : selectedStore !== 'all'
-                ? 'This store hasn\'t added products yet.'
-                : 'No stores have added products yet.'}
+                ? 'Try adjusting your search or browse our stores above.'
+                : 'No stores have added products yet. Check back soon!'}
             </p>
-            {selectedStore !== 'all' && (
-              <button
-                onClick={() => setSelectedStore('all')}
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                View all stores
-              </button>
-            )}
           </div>
         )}
       </div>
