@@ -142,21 +142,26 @@ export default function CheckoutPage() {
               Thank you for your purchase. We've sent a confirmation email to your inbox.
             </p>
             
-            {/* Spam Warning */}
-            <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-8 max-w-xl mx-auto">
-              <div className="flex items-start gap-3">
+            {/* Spam Warning - Prominent */}
+            <div className="bg-yellow-50 border-4 border-yellow-500 rounded-xl p-6 mb-8 shadow-lg animate-pulse-slow">
+              <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="text-sm font-semibold text-yellow-800 mb-1">
-                    📧 Check Your Spam/Junk Folder!
+                  <h3 className="text-lg font-bold text-yellow-900 mb-2">
+                    ⚠️ IMPORTANT: Check Your Email!
                   </h3>
-                  <p className="text-sm text-yellow-700 leading-relaxed">
-                    Your order confirmation email may have been filtered to spam. Please check your <strong>spam or junk folder</strong> and mark our emails as "Not Spam" to receive future order updates.
+                  <p className="text-base text-yellow-800 leading-relaxed font-medium mb-2">
+                    We've sent your order confirmation to <strong className="text-yellow-900">{formData.email}</strong>
                   </p>
+                  <div className="bg-yellow-100 border-l-4 border-yellow-600 p-3 rounded">
+                    <p className="text-sm text-yellow-900 leading-relaxed">
+                      📧 <strong>The email may be in your SPAM or JUNK folder!</strong> Please check there first and mark it as "Not Spam" to receive future order updates.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

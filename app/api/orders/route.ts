@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
       console.warn('⚠️ RESEND_API_KEY not configured - emails will not be sent')
+      console.warn('⚠️ Skipping all email notifications (seller, admin, customer)')
+      // Return success since order was created, just no emails sent
+      return NextResponse.json(order, { status: 201 })
     }
 
     try {
@@ -425,6 +428,7 @@ The ${siteName} Team
         `,
       })
 
+      console.log(`✅ Customer confirmation email sent successfully to: ${customer.email}`)
       console.log('✅ All order emails sent successfully!')
     } catch (emailError) {
       console.error('❌ Failed to send order emails:', emailError)
