@@ -7,7 +7,6 @@ import {
   Package, 
   ShoppingCart, 
   Users, 
-  DollarSign, 
   Plus, 
   Edit, 
   Trash2, 
@@ -373,7 +372,6 @@ export default function AdminDashboard() {
     )
   }
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
   const totalOrders = orders.length
   const totalProducts = products.length
   const pendingOrders = orders.filter(order => order.status === 'pending').length
@@ -454,33 +452,19 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h1>
             
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {userRole === 'admin' && (
-                <>
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <DollarSign className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">${totalRevenue.toFixed(2)}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <ShoppingCart className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                    <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <ShoppingCart className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                      <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-                </>
               )}
 
               <div className="bg-white rounded-lg shadow p-6">
