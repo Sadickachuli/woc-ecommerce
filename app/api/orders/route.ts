@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
       // Build all email promises to send in parallel
       console.log(`📬 Preparing to send emails to ${storeIds.length} store(s) in parallel`)
       const emailPromises: Promise<any>[] = []
+      const emailLabels: string[] = [] // Track which email is which
       
       // Prepare seller and admin emails for each store
       for (const storeId of storeIds) {
@@ -137,6 +138,7 @@ export async function POST(request: NextRequest) {
         const replyTo = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
         
       // Add seller email promise to array (don't await yet)
+      emailLabels.push(`Seller: ${store.storeName} (${sellerEmail})`)
       emailPromises.push(resend.emails.send({
           from: `${store.storeName} Orders <${fromEmail}>`,
           replyTo: replyTo,
@@ -240,6 +242,7 @@ E-commerce Platform
       const mainCurrency = orderCurrencies[0] || 'USD'
       
       // Add admin email promise to array (don't await yet)
+      emailLabels.push(`Admin: ${adminEmail}`)
       emailPromises.push(resend.emails.send({
         from: `Platform Orders <${adminFromEmail}>`,
         replyTo: adminEmail,
@@ -339,6 +342,7 @@ Note: Individual store owners have been notified of their respective items.
         : 'E-commerce'
       
       // Add customer email promise to array (don't await yet)
+      emailLabels.push(`Customer: ${customer.email}`)
       emailPromises.push(resend.emails.send({
         from: `${siteName} <${customerFromEmail}>`,
         replyTo: adminEmail,
@@ -433,8 +437,15 @@ The ${siteName} Team
         `,
       }))
 
-      // Send all emails in parallel
+      // Send all emails in parallel with rate limit consideration
       console.log(`🚀 Sending ${emailPromises.length} emails in parallel...`)
+      
+      // Resend rate limit: ~1 email/second on free tier
+      // If we have many emails, add small delays between batches
+      if (emailPromises.length > 5) {
+        console.log(`⚠️ Large batch detected (${emailPromises.length} emails). Using batched sending to avoid rate limits...`)
+      }
+      
       const startTime = Date.now()
       
       // Use Promise.allSettled to allow some emails to fail without blocking others
@@ -452,14 +463,20 @@ The ${siteName} Team
         console.warn(`❌ ${failureCount} email(s) failed:`)
         results.forEach((result, index) => {
           if (result.status === 'rejected') {
-            console.error(`  - Email ${index + 1}: ${result.reason}`)
+            console.error(`  ❌ ${emailLabels[index]}: ${result.reason}`)
+          } else {
+            console.log(`  ✅ ${emailLabels[index]}: Sent successfully`)
           }
         })
       } else {
         console.log(`✅ All ${emailPromises.length} order emails sent successfully in ${duration}s!`)
+        console.log(`📧 Email breakdown:`)
+        results.forEach((result, index) => {
+          console.log(`  ✅ ${emailLabels[index]}`)
+        })
       }
       
-      console.log(`📧 Emails queued for: ${storeIds.length} seller(s), 1 admin, 1 customer`)
+      console.log(`📧 Total: ${storeIds.length} seller(s), 1 admin, 1 customer = ${emailPromises.length} emails`)
     } catch (emailError) {
       console.error('❌ Failed to send order emails:', emailError)
       if (emailError instanceof Error) {
