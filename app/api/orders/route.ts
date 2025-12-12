@@ -105,9 +105,11 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Send emails to each store owner
-      console.log(`📬 Preparing to send emails to ${storeIds.length} store(s)`)
+      // Build all email promises to send in parallel
+      console.log(`📬 Preparing to send emails to ${storeIds.length} store(s) in parallel`)
+      const emailPromises: Promise<any>[] = []
       
+      // Prepare seller and admin emails for each store
       for (const storeId of storeIds) {
         if (storeId === 'unknown') continue
 
@@ -121,7 +123,7 @@ export async function POST(request: NextRequest) {
         const storeOwner = await getUser(store.ownerUid)
         const sellerEmail = storeOwner?.email || store.contactEmail
 
-        console.log(`📧 Sending email to seller: ${sellerEmail} for store: ${store.storeName}`)
+        console.log(`📧 Queuing email to seller: ${sellerEmail} for store: ${store.storeName}`)
 
         const storeItems = itemsWithStoreId.filter(item => item.storeId === storeId)
         const storeCurrency = storeItems[0]?.currency || 'USD'
@@ -134,7 +136,8 @@ export async function POST(request: NextRequest) {
         
         const replyTo = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
         
-      await resend.emails.send({
+      // Add seller email promise to array (don't await yet)
+      emailPromises.push(resend.emails.send({
           from: `${store.storeName} Orders <${fromEmail}>`,
           replyTo: replyTo,
         to: sellerEmail,
@@ -221,22 +224,23 @@ Please process this order and contact the customer if needed.
 Best regards,
 E-commerce Platform
           `,
-        })
+        }))
       }
 
-      // Send email to main admin
+      // Prepare admin email
       const adminEmail = process.env.ADMIN_EMAIL || 'xentofwocghana@gmail.com'
       const adminFromEmail = process.env.RESEND_FROM_DOMAIN 
         ? `orders@${process.env.RESEND_FROM_DOMAIN}`
         : 'onboarding@resend.dev'
-      console.log(`📧 Sending admin notification to: ${adminEmail}`)
+      console.log(`📧 Queuing admin notification to: ${adminEmail}`)
       
       // Check if order has mixed currencies
       const orderCurrencies = [...new Set(itemsWithStoreId.map(item => item.currency))]
       const hasMixedCurrencies = orderCurrencies.length > 1
       const mainCurrency = orderCurrencies[0] || 'USD'
       
-      await resend.emails.send({
+      // Add admin email promise to array (don't await yet)
+      emailPromises.push(resend.emails.send({
         from: `Platform Orders <${adminFromEmail}>`,
         replyTo: adminEmail,
         to: adminEmail,
@@ -322,10 +326,10 @@ ${itemsWithStoreId.map((item: any) => `- ${item.productName}: ${formatPrice(item
 
 Note: Individual store owners have been notified of their respective items.
         `,
-      })
+      }))
 
-      // Email to customer
-      console.log(`📧 Sending order confirmation to customer: ${customer.email}`)
+      // Prepare customer email
+      console.log(`📧 Queuing order confirmation to customer: ${customer.email}`)
       const customerFromEmail = process.env.RESEND_FROM_DOMAIN 
         ? `noreply@${process.env.RESEND_FROM_DOMAIN}`
         : 'onboarding@resend.dev'
@@ -334,7 +338,8 @@ Note: Individual store owners have been notified of their respective items.
         ? process.env.RESEND_FROM_DOMAIN.replace(/\.[^.]+$/, '').split('.').pop()?.toUpperCase()
         : 'E-commerce'
       
-      await resend.emails.send({
+      // Add customer email promise to array (don't await yet)
+      emailPromises.push(resend.emails.send({
         from: `${siteName} <${customerFromEmail}>`,
         replyTo: adminEmail,
         to: customer.email,
@@ -426,10 +431,35 @@ Thank you for your purchase!
 Best regards,
 The ${siteName} Team
         `,
-      })
+      }))
 
-      console.log(`✅ Customer confirmation email sent successfully to: ${customer.email}`)
-      console.log('✅ All order emails sent successfully!')
+      // Send all emails in parallel
+      console.log(`🚀 Sending ${emailPromises.length} emails in parallel...`)
+      const startTime = Date.now()
+      
+      // Use Promise.allSettled to allow some emails to fail without blocking others
+      const results = await Promise.allSettled(emailPromises)
+      
+      const endTime = Date.now()
+      const duration = ((endTime - startTime) / 1000).toFixed(2)
+      
+      // Count successes and failures
+      const successCount = results.filter(r => r.status === 'fulfilled').length
+      const failureCount = results.filter(r => r.status === 'rejected').length
+      
+      if (failureCount > 0) {
+        console.warn(`⚠️ ${successCount}/${emailPromises.length} emails sent successfully in ${duration}s`)
+        console.warn(`❌ ${failureCount} email(s) failed:`)
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.error(`  - Email ${index + 1}: ${result.reason}`)
+          }
+        })
+      } else {
+        console.log(`✅ All ${emailPromises.length} order emails sent successfully in ${duration}s!`)
+      }
+      
+      console.log(`📧 Emails queued for: ${storeIds.length} seller(s), 1 admin, 1 customer`)
     } catch (emailError) {
       console.error('❌ Failed to send order emails:', emailError)
       if (emailError instanceof Error) {
