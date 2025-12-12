@@ -54,8 +54,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           const newItemStoreId = product.storeId
           
           if (firstItemStoreId !== newItemStoreId) {
-            // Different store - clear cart and add new item
-            console.warn('⚠️ Cart cleared: Can only order from one store at a time')
+            // Different store - clear cart and replace with new item
             const newItems = [{ product, quantity: 1, currency }]
             return {
               items: newItems,
@@ -121,9 +120,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const newItemStoreId = product.storeId
       
       if (firstItemStoreId !== newItemStoreId) {
-        toast.error('Cart cleared: You can only order from one store at a time', {
-          duration: 4000,
-          icon: '🛒',
+        // Show warning BEFORE clearing cart
+        toast((t) => (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚠️</span>
+              <div className="flex-1">
+                <p className="font-bold text-sm">Different Store Detected</p>
+                <p className="text-xs text-gray-600">Previous cart items will be replaced</p>
+              </div>
+            </div>
+            <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
+              💡 <strong>Tip:</strong> Checkout before shopping from another store
+            </div>
+          </div>
+        ), {
+          duration: 5000,
+          style: {
+            background: '#FEF3C7',
+            border: '2px solid #F59E0B',
+            padding: '12px',
+          },
         })
       }
     }
